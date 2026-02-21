@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Limn</title>
+  <link rel="stylesheet" href="engine.css">
+  <link rel="stylesheet" href="tiles/tiles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading">Loading…</div>
+  </div>
+  <p style="text-align:center;margin-top:-24px;padding-bottom:24px">
+    <a href="themes.html" style="font-size:0.8rem;color:var(--color-text-muted);text-decoration:none">Preview themes</a>
+  </p>
+
+  <script type="module">
+    import { load } from "https://esm.sh/js-yaml@4";
+    import * as lucide from "https://esm.sh/lucide";
+    import { applyTheme, renderProfile, showError } from "./engine.js";
+    import { renderTile, validateTiles } from "./tiles/index.js";
+
+    const { createIcons, ...icons } = lucide;
+
+    function validate(config) {
+      if (!config || typeof config !== "object") throw new Error("Config must be a YAML mapping");
+      if (!config.profile)       throw new Error("Missing required field: profile");
+      if (!config.profile.name)  throw new Error("Missing required field: profile.name");
+      if (!config.theme)         throw new Error("Missing required field: theme");
+      for (const k of ["background", "surface", "text", "accent"]) {
+        if (!config.theme[k]) throw new Error(`Missing required theme field: theme.${k}`);
+      }
+      validateTiles(config);
+    }
+
+    // ---- Bootstrap ----
+
+    async function loadTheme(themeValue) {
+      if (typeof themeValue === "string") {
+        const path = `themes/${themeValue}.yaml`;
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`Could not load theme "${themeValue}" (${path} returned HTTP ${res.status})`);
+        return load(await res.text());
+      }
+      return themeValue;
+    }
+
+    try {
+      const r = await fetch("./config.yaml");
+      if (!r.ok) throw new Error(`Could not load config.yaml (HTTP ${r.status})`);
+      const config = load(await r.text());
+      config.theme = await loadTheme(config.theme);
+      validate(config);
+
+      const app = document.getElementById("app");
+      app.innerHTML = "";
+
+      applyTheme(config.theme);
+      app.appendChild(renderProfile(config.profile));
+
+      const tilesEl = document.createElement("div");
+      tilesEl.id = "tiles";
+      tilesEl.style.display = "contents";
+      app.appendChild(tilesEl);
+
+      config.tiles.forEach(renderTile);
+      createIcons({ icons });
+    } catch (err) {
+      showError(err, "Config error");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Example: calendar tile — events from ICS file or static list
+# window: today | week | month | year
+# src: path to .ics file (local or URL — GitHub Gist raw URL works well)
+# Or use items: for a static list
+
+profile:
+  name: Avery Storm
+  bio: Ethical celebrity
+  image: avatar.jpg
+
+theme: dark
+
+tiles:
+  - type: heading
+    text: Schedule
+
+  - type: calendar
+    window: month
+    src: example.ics

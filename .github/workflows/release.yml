@@ -1,0 +1,74 @@
+# Create releases from commit messages: +semver:major, +semver:minor, else patch
+# No .NET or npm — pure bash + git
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute next version from commits
+        id: version
+        run: |
+          # Latest tag (strip 'v' prefix) or 0.0.0
+          if TAG=$(git describe --tags --abbrev=0 2>/dev/null); then
+            LATEST="${TAG#v}"
+            COMMITS=$(git log "$TAG"..HEAD --pretty=format:"%B")
+          else
+            LATEST="0.0.0"
+            COMMITS=$(git log --pretty=format:"%B")
+          fi
+
+          IFS='.' read -r MAJ MIN PATCH <<< "$LATEST"
+          MAJ=${MAJ:-0}; MIN=${MIN:-0}; PATCH=${PATCH:-0}
+          if [ -z "$COMMITS" ]; then
+            echo "bump=none" >> $GITHUB_OUTPUT
+            echo "version=$LATEST" >> $GITHUB_OUTPUT
+            echo "No new commits since $LATEST, skipping release"
+            exit 0
+          fi
+
+          # Highest bump in commits: major > minor > patch
+          BUMP=patch
+          echo "$COMMITS" | grep -qiE '\+semver:\s*(breaking|major)' && BUMP=major
+          echo "$COMMITS" | grep -qiE '\+semver:\s*(feature|minor)' && [ "$BUMP" != "major" ] && BUMP=minor
+
+          case $BUMP in
+            major) MAJ=$((MAJ+1)); MIN=0; PATCH=0 ;;
+            minor) MIN=$((MIN+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+          esac
+
+          VERSION="${MAJ}.${MIN}.${PATCH}"
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Next version: v$VERSION ($BUMP)"
+
+      - name: Create release
+        if: steps.version.outputs.bump != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+
+          # Create release with zip (deployable files only)
+          zip -r limn-"$TAG".zip . \
+            -x "*.git*" \
+            -x ".github/*" \
+            -x ".cursor/*" \
+            -x "wiki/*"
+          gh release create "$TAG" limn-"$TAG".zip \
+            --title "$TAG" \
+            --notes "Release $TAG"
+          rm limn-"$TAG".zip

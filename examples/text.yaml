@@ -1,0 +1,15 @@
+# Example: text tile — body copy
+# Copy the tile block into your config.yaml tiles list
+
+profile:
+  name: Avery Storm
+  bio: Ethical celebrity
+  image: avatar.jpg
+
+theme: dark
+
+tiles:
+  - type: text
+    content: >
+      Some body copy here. Supports multi-line with the > YAML block scalar.
+      Use it for bios, announcements, or whatever you need.

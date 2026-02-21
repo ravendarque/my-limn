@@ -1,0 +1,8 @@
+background: "#ffadd6"
+surface:    "#ffcce8"
+text:       "#5c0033"
+textMuted:  "#a0456a"
+accent:     "#e91e8c"
+accentText: "#ffffff"
+border:     "#ff80c0"
+corners:    rounded

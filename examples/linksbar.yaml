@@ -1,0 +1,27 @@
+# Example: linksbar tile — row of icon buttons (social links, etc.)
+# Copy the tile block into your config.yaml tiles list
+# surface: hide | transparent | show — hide removes the card background
+
+profile:
+  name: Avery Storm
+  bio: Ethical celebrity
+  image: avatar.jpg
+
+theme: dark
+
+tiles:
+  - type: linksbar
+    surface: hide
+    items:
+      - icon: instagram
+        url: https://instagram.com/yourname
+        label: Instagram
+      - icon: twitter
+        url: https://twitter.com/yourname
+        label: Twitter
+      - icon: github
+        url: https://github.com/yourname
+        label: GitHub
+      - icon: globe
+        url: https://yourwebsite.com
+        label: Website

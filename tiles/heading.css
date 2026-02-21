@@ -1,0 +1,7 @@
+.tile-heading h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}

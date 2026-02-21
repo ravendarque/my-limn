@@ -1,0 +1,15 @@
+profile:
+  name: Avery Storm
+  bio: Ethical celebrity. Trying to do good with what I've got.
+  image: avatar.jpg
+
+theme: dark
+
+tiles:
+  - type: heading
+    text: Welcome
+
+  - type: text
+    content: >
+      This is a Limn page. Edit config.yaml to make it yours.
+      See the examples/ folder for each tile type.

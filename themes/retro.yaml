@@ -1,0 +1,9 @@
+# Old arcade — CMYK palette
+background: "#0a0a0a"
+surface:    "#1a1a1a"
+text:       "#ffffff"
+textMuted:  "#ff00ff"
+accent:     "#00ffff"
+accentText: "#000000"
+border:     "#ffff00"
+corners:    pixel

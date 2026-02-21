@@ -1,0 +1,97 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Limn//Ethical Celebrity Schedule//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+
+BEGIN:VEVENT
+UID:ec-un-briefing@limn
+SUMMARY:UN Goodwill Ambassador Briefing
+DESCRIPTION:Quarterly sync on humanitarian campaigns. No private jets.
+LOCATION:Video call
+DTSTART:20260220T140000Z
+DTEND:20260220T150000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-charity-gala@limn
+SUMMARY:Charity Gala — Children's Hospital
+DESCRIPTION:Hosting. Donated the dress. Actually showed up.
+LOCATION:Grand Ballroom
+DTSTART:20260222T190000Z
+DTEND:20260222T230000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-fan-meet@limn
+SUMMARY:Virtual Fan Meet & Greet
+DESCRIPTION:1:1 video calls. Limited slots. Proceeds to literacy charity.
+LOCATION:Online
+DTSTART:20260224T180000Z
+DTEND:20260224T200000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-book-signing@limn
+SUMMARY:Sign Copies at Independent Bookstore
+DESCRIPTION:Memoir launch. Chose indie over Amazon. No plastic wrap.
+LOCATION:Pages & Co.
+DTSTART:20260226T170000Z
+DTEND:20260226T190000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-plant-tree@limn
+SUMMARY:Plant a Tree (literally)
+DESCRIPTION:Annual reforestation trip. Shovel provided. No photo op — just planting.
+LOCATION:Riverside Park
+DTSTART:20260228T100000Z
+DTEND:20260228T120000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-carbon-offset@limn
+SUMMARY:Carbon Offset Verification Meeting
+DESCRIPTION:Third-party audit of last tour's footprint. Boring but necessary.
+LOCATION:Accountant's office
+DTSTART:20260302T090000Z
+DTEND:20260302T100000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-brand-partnership@limn
+SUMMARY:Approve Ethical Brand Partnership
+DESCRIPTION:Reviewing contract. Must pass: living wage, no greenwashing, B Corp.
+LOCATION:Home office
+DTSTART:20260304T140000Z
+DTEND:20260304T150000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-psa-record@limn
+SUMMARY:Record PSAs for Climate Awareness
+DESCRIPTION:Pro bono. Union rate waived. Actually believe in the cause.
+LOCATION:Studio B
+DTSTART:20260306T100000Z
+DTEND:20260306T130000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-bake-off@limn
+SUMMARY:Judge Local Bake-Off (charity fundraiser)
+DESCRIPTION:Community centre. Prize: bragging rights. Raised £2k for food bank.
+LOCATION:St Mary's Hall
+DTSTART:20260308T150000Z
+DTEND:20260308T170000Z
+END:VEVENT
+
+BEGIN:VEVENT
+UID:ec-lunch-agent@limn
+SUMMARY:Lunch with Agent (discuss script choices)
+DESCRIPTION:Passed on the blockbuster. Taking the indie with the good script.
+LOCATION:The Ivy
+DTSTART:20260310T123000Z
+DTEND:20260310T140000Z
+END:VEVENT
+
+END:VCALENDAR

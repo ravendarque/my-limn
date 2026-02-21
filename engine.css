@@ -1,0 +1,135 @@
+/* Shared engine styles — used by index.html and themes.html */
+
+:root {
+  --color-bg:          #0f0f0f;
+  --color-surface:     #1a1a1a;
+  --color-text:        #f0f0f0;
+  --color-text-muted:   #a0a0a0;
+  --color-accent:       #7c6aff;
+  --color-accent-text:  #ffffff;
+  --color-border:       #2e2e2e;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 0 48px;
+}
+
+@media (min-width: 640px) {
+  #app { padding: 40px 0 64px; gap: 14px; }
+}
+
+/* Corner variants */
+[data-corners="square"] .tile,
+[data-corners="square"] .tile-link a,
+[data-corners="square"] .error-box { border-radius: 0; }
+
+[data-corners="clipped"] .tile,
+[data-corners="clipped"] .error-box {
+  border: none;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+[data-corners="clipped"] .tile-link a { border-radius: 0; }
+
+[data-corners="pixel"] .tile,
+[data-corners="pixel"] .error-box {
+  border-radius: 0;
+  border: none;
+  clip-path: polygon(
+    0 12px, 4px 12px, 4px 8px, 8px 8px, 8px 4px, 12px 4px, 12px 0,
+    calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 8px) 4px, calc(100% - 8px) 8px, calc(100% - 4px) 8px, calc(100% - 4px) 12px, 100% 12px,
+    100% calc(100% - 12px), calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) 100%,
+    12px 100%, 12px calc(100% - 4px), 8px calc(100% - 4px), 8px calc(100% - 8px), 4px calc(100% - 8px), 4px calc(100% - 12px), 0 calc(100% - 12px)
+  );
+  filter: drop-shadow(4px 4px 0 var(--color-border));
+}
+[data-corners="pixel"] .tile-link a {
+  border-radius: 0;
+  transition: opacity 0.06s;
+}
+[data-corners="pixel"] .tile-heading,
+[data-corners="pixel"] .tile-linksbar {
+  clip-path: none;
+  filter: none;
+}
+
+#loading {
+  text-align: center;
+  padding: 64px 16px;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.error-box {
+  background: var(--color-surface);
+  border: 1px solid #ff4444;
+  border-radius: 6px;
+  padding: 20px;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.error-box strong { display: block; margin-bottom: 6px; }
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px 20px;
+  text-align: center;
+}
+
+.profile-avatar,
+.profile-initials {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.profile-initials {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.profile-bio {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  max-width: 400px;
+}

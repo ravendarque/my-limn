@@ -1,0 +1,19 @@
+/* Tile card base + surface modifiers */
+
+.tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.tile--surface-transparent {
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border-color: color-mix(in srgb, var(--color-border) 50%, transparent);
+}
+
+.tile--surface-hide {
+  background: transparent;
+  border-color: transparent;
+}

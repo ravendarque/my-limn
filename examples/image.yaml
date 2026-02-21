@@ -1,0 +1,15 @@
+# Example: image tile — photo or graphic
+# Copy the tile block into your config.yaml tiles list
+# url can be a local filename or a full URL
+
+profile:
+  name: Avery Storm
+  bio: Ethical celebrity
+  image: avatar.jpg
+
+theme: dark
+
+tiles:
+  - type: image
+    url: avatar.jpg
+    alt: Profile photo

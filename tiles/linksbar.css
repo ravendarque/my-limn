@@ -5,13 +5,69 @@
   gap: 4px;
 }
 
+/* Trigger: hidden on desktop, shown on mobile */
+.linksbar-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.linksbar-trigger:hover,
+.linksbar-trigger:focus-visible {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.linksbar-trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.linksbar-trigger .ti {
+  font-size: 22px;
+}
+
+.linksbar-trigger-label {
+  font-size: 0.95rem;
+  flex: 1;
+  text-align: left;
+}
+
+.linksbar-trigger-chevron {
+  opacity: 0.5;
+  font-size: 18px !important;
+}
+
+/* Links container */
+.linksbar-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
 .tile-linksbar a {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   width: 44px;
   height: 44px;
+  padding: 0 16px;
   color: var(--color-text-muted);
+  background: var(--color-surface);
   text-decoration: none;
   border-radius: 6px;
   transition: color 0.15s ease, background 0.15s ease;
@@ -23,12 +79,133 @@
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
+.tile-linksbar a.tile-linksbar-link--active {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.tile-linksbar a.tile-linksbar-link--active:hover,
+.tile-linksbar a.tile-linksbar-link--active:focus-visible {
+  opacity: 0.9;
+}
+
 .tile-linksbar a:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
+.tile-linksbar a.tile-linksbar-link--active:focus-visible {
+  outline-color: var(--color-accent-text);
+}
+
 .tile-linksbar a svg {
   width: 22px;
   height: 22px;
+}
+.tile-linksbar a .ti {
+  font-size: 22px;
+}
+
+.tile-linksbar a .tile-linksbar-label {
+  display: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.tile-linksbar--with-labels a {
+  flex: 1;
+  min-width: 0;
+}
+
+.tile-linksbar--with-labels a .tile-linksbar-label {
+  display: inline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile: show trigger, hide inline nav */
+@media (max-width: 639px) {
+  .tile-linksbar--with-labels .linksbar-trigger {
+    display: flex;
+    width: 100%;
+  }
+
+  .tile-linksbar--with-labels .linksbar-links {
+    display: none;
+  }
+}
+
+/* Modal overlay */
+.linksbar-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 9999;
+  animation: linksbar-fade-in 0.15s ease;
+}
+
+.linksbar-modal-sheet {
+  width: 100%;
+  max-width: 640px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-radius: 12px 12px 0 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: linksbar-slide-up 0.2s ease;
+}
+
+.linksbar-modal-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.linksbar-modal-link:hover,
+.linksbar-modal-link:focus-visible {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.linksbar-modal-link.tile-linksbar-link--active {
+  color: var(--color-accent);
+}
+
+.linksbar-modal-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.linksbar-modal-link .ti {
+  font-size: 22px;
+}
+
+.linksbar-modal-link .tile-linksbar-label {
+  display: inline;
+}
+
+@keyframes linksbar-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes linksbar-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }

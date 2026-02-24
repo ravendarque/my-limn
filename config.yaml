@@ -1,15 +1,115 @@
 profile:
-  name: Avery Storm
-  bio: Ethical celebrity. Trying to do good with what I've got.
-  image: avatar.jpg
+  name: Nix
+  bio: "Non-binary technologist taking a sabbatical in 2026 to embark on a climbing odyssey"
+  image: avatar.png
 
-theme: dark
+theme: scarlet
 
-tiles:
-  - type: heading
-    text: Welcome
-
-  - type: text
-    content: >
-      This is a Limn page. Edit config.yaml to make it yours.
-      See the examples/ folder for each tile type.
+pages:
+  - id: home
+    title: Home
+    icon: home
+    tiles:
+      - type: pagenav
+        surface: hide
+        showLabels: true
+      - type: linksbar
+        surface: hide
+        items:
+          - icon: brand-instagram
+            url: "https://www.instagram.com/ravendarque/"
+            label: Instagram
+          - icon: message-2
+            url: "https://share.upscrolled.com/en/user/845379f2-90be-4e4f-85db-35a62d99ef7e"
+            label: UpScrolled
+          - icon: brand-github
+            url: "https://github.com/ravendarque"
+            label: GitHub
+          - icon: world-heart
+            url: "https://wearebeyondborders.com/"
+            label: wearebeyondborders.com
+      - type: heading
+        text: "The Big Climbing Tour 2026"
+      - type: text
+        content: "This is the rough agenda for the big climbing tour. If you want to come join me at any point along the way, I would love that, drop me a message!"
+      - type: calendar
+        window: year
+        src: "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/trip-2026.ics"
+  - id: tech
+    title: Tech
+    icon: apps
+    tiles:
+      - type: pagenav
+        surface: hide
+        showLabels: true
+      - type: heading
+        text: "We Are Beyond Borders"
+      - type: text
+        content: "I wanted my profile pic to show support for the causes I believe in. The causes that I care about - social justice, marginalised groups, oppressed or displaced peoples - all have their own flags. So I made We Are Beyond Borders and I'm really proud of it."
+      - type: text
+        content: "You can choose from many different flags to show your support for opressed, displaced, and marginalised groups; occupied or disputed territories; LGBTQ+ identities; and more."
+      - type: text
+        content: "It's privacy first: your photos don't leave your device and it doesn't track or harvest any data. It has an ethics and sustainability statement with a clear description of the tech and processes so you can make informed choices."
+      - type: link
+        url: "https://wearebeyondborders.com"
+        label: wearebeyondborders.com
+        icon: world-heart
+      - type: link
+        url: "https://github.com/ravendarque/ravendarque-beyond-borders"
+        label: GitHub
+        icon: brand-github
+      - type: heading
+        text: Limn
+      - type: quote
+        content: "limn: as in to describe; to give a representation or account of in words"
+      - type: text
+        content: "Most link-in-bio tools are SaaS: you hand over your links, your traffic, and your data. Limn is the opposite: a static page you host yourself. One YAML file, no backend, no build step. You edit the config, deploy it anywhere, and it’s yours."
+      - type: text
+        content: "Limn is a small vanilla JS engine that reads a single config.yaml and renders a profile page: name, bio, image, and tiles (links, text, images, embeds, calendars). No Node, no bundler, no database. Drop the files on GitHub Pages, Netlify, Cloudflare Pages, or any static host. The configurator lets you build a page in the browser and download a ready-to-deploy zip—no YAML knowledge required."
+      - type: text
+        content: "You own the data. There’s no analytics, no tracking, no upsells. No vendor lock-in. The stack is simple and transparent: YAML, HTML, CSS, and a small JS engine. No third-party scripts beyond optional CDN icons. It’s designed to be auditable and easy to understand. Dependencies and services are chosen with the BDS boycott list in mind—no tools from companies on that list, except where unavoidable (e.g. GitHub for hosting)."
+      - type: text
+        content: "Link-in-bio pages are useful, but they shouldn’t require giving up control. Limn shows that a useful tool can be minimal, self-hosted, and respectful of the person using it."
+      - type: link
+        url: "https://github.com/ravendarque/ravendarque-limn"
+        label: GitHub
+        icon: brand-github
+  - id: community
+    title: Community
+    icon: heart-handshake
+    tiles:
+      - type: pagenav
+        surface: hide
+        showLabels: true
+      - type: heading
+        text: "Queer Climbers Ldn"
+      - type: text
+        content: "I'm one of the organisers of Queer Climbers Ldn, London's biggest LGBTQ+ climbing community. We run bouldering and rope socials monthly at gyms all over London and we also have a thriving Discord community."
+      - type: link
+        url: "https://instagram.com/queerclimbersldn"
+        label: Instagram
+        icon: brand-instagram
+      - type: heading
+        text: "Queer Polyamory Social London"
+      - type: text
+        content: "I'm one of the organisers of Queer Polyamory Social London, a monthly meetup at The Foxglove in Islington for queer people who polyamorous, relationship anarchist, or polycurious."
+      - type: link
+        url: "https://www.instagram.com/queerpolyamorysociallondon"
+        label: Instagram
+        icon: brand-instagram
+      - type: heading
+        text: "Yonder Boulder Buds"
+      - type: text
+        content: "I'm part of the Yonder Boulder Buds team - a group of voluneer facilitators running weekly socials at Yonder Climbing in Blackhorse Road, London. I run Queer Climb on Wednesday evenings as well as helping out at events."
+      - type: link
+        url: "https://www.instagram.com/yonder.climbing"
+        label: Instagram
+        icon: brand-instagram
+      - type: heading
+        text: "The Beth Squad"
+      - type: text
+        content: "Just a bunch of beautiful idiots. Climbing and dumbassery with a lot of love."
+      - type: link
+        url: "https://www.instagram.com/thebethsquad"
+        label: Instagram
+        icon: brand-instagram

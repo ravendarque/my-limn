@@ -1,4 +1,5 @@
 import { makeTile } from "./utils.js";
+import { createIconEl } from "./icons.js";
 
 export function render(tile) {
   const el = makeTile("link");
@@ -7,9 +8,8 @@ export function render(tile) {
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   if (tile.icon) {
-    const i = document.createElement("i");
-    i.setAttribute("data-lucide", tile.icon);
-    a.appendChild(i);
+    const i = createIconEl(tile.icon);
+    if (i) a.appendChild(i);
   }
   const span = document.createElement("span");
   span.textContent = tile.label;

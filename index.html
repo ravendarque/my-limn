@@ -4,24 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Limn</title>
-  <link rel="stylesheet" href="engine.css">
+  <link rel="stylesheet" href="limn-engine.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.36.1/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="tiles/tiles.css">
 </head>
 <body>
   <div id="app">
     <div id="loading">Loading…</div>
   </div>
-  <p style="text-align:center;margin-top:-24px;padding-bottom:24px">
-    <a href="themes.html" style="font-size:0.8rem;color:var(--color-text-muted);text-decoration:none">Preview themes</a>
-  </p>
+  <script>
+    function showLoadError(title, msg, hint) {
+      var app = document.getElementById("app");
+      if (!app || !app.querySelector("#loading")) return;
+      app.innerHTML = '<div class="error-box">' +
+        '<strong>' + (title || "Error").replace(/</g, "&lt;") + '</strong>' +
+        '<p class="error-message">' + (msg || "").replace(/</g, "&lt;") + '</p>' +
+        '<p class="error-hint"><strong>What to try:</strong> ' + (hint || "Open the console (F12) for details.").replace(/</g, "&lt;") + '</p>' +
+        '</div>';
+    }
+    window.addEventListener("error", function(e) {
+      var msg = (e.message || "Unknown error").replace(/</g, "&lt;");
+      var hint = "Check that all files from the zip are deployed (including tiles/icons.js), and that esm.sh is not blocked.";
+      if (msg.indexOf("fetch") !== -1 || msg.indexOf("import") !== -1 || msg.indexOf("404") !== -1) {
+        hint = "A file failed to load. Deploy the full zip from the configurator — config.yaml, limn-engine files, tiles/, and themes/ must all be present.";
+      }
+      showLoadError("Script error", msg, hint);
+    });
+    window.addEventListener("unhandledrejection", function(e) {
+      var msg = (e.reason?.message || String(e.reason) || "Module failed to load").replace(/</g, "&lt;");
+      showLoadError("Load failed", msg, "A script or config file could not be loaded. Deploy the full zip and ensure config.yaml exists.");
+    });
+    setTimeout(function() {
+      var app = document.getElementById("app");
+      var loading = document.getElementById("loading");
+      if (loading && app.contains(loading)) {
+        app.innerHTML = '<div class="error-box">' +
+          '<strong>Loading timed out</strong>' +
+          '<p class="error-message">The page could not finish loading.</p>' +
+          '<p class="error-hint"><strong>What to try:</strong> Open the browser console (F12) for the exact error. Common causes: config.yaml missing, limn-engine files (tiles/icons.js etc.) not deployed, or esm.sh CDN blocked. Make sure you extracted the full zip from the configurator before uploading.</p>' +
+          '</div>';
+      }
+    }, 8000);
+  </script>
+  <footer style="text-align:center;padding:24px 16px;font-size:0.8rem;color:var(--color-text-muted)">
+    <p style="margin:0 0 8px 0">Created with <a href="https://github.com/ravendarque/ravendarque-limn/wiki" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent);text-decoration:none">Limn</a> by <a href="https://github.com/ravendarque" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent);text-decoration:none">Ravendarque</a>.</p>
+    <p style="margin:0"><a href="https://ravendarque.github.io/ravendarque-limn/configurator/" target="_blank" rel="noopener noreferrer" style="color:var(--color-accent);text-decoration:none"><i class="ti ti-tool" style="font-size:0.9em;vertical-align:middle;margin-right:4px"></i>Create your own here</a></p>
+  </footer>
 
   <script type="module">
     import { load } from "https://esm.sh/js-yaml@4";
-    import * as lucide from "https://esm.sh/lucide";
-    import { applyTheme, renderProfile, showError } from "./engine.js";
+    import { applyTheme, loadTheme, renderProfile, showError } from "./limn-engine.js";
     import { renderTile, validateTiles } from "./tiles/index.js";
 
-    const { createIcons, ...icons } = lucide;
+    function normalizeConfig(config) {
+      if (config.pages) return config;
+      if (!config.tiles) throw new Error("Config must have either 'pages' or 'tiles'");
+      config.pages = [{ id: "home", title: "Home", icon: "home", tiles: config.tiles }];
+      return config;
+    }
 
     function validate(config) {
       if (!config || typeof config !== "object") throw new Error("Config must be a YAML mapping");
@@ -31,31 +71,31 @@
       for (const k of ["background", "surface", "text", "accent"]) {
         if (!config.theme[k]) throw new Error(`Missing required theme field: theme.${k}`);
       }
-      validateTiles(config);
+      if (!Array.isArray(config.pages) || config.pages.length === 0)
+        throw new Error("pages must be a non-empty list");
+      config.pages.forEach((page, i) => {
+        const at = `pages[${i}]`;
+        if (!page.id) throw new Error(`${at} missing required field: id`);
+        if (!Array.isArray(page.tiles)) throw new Error(`${at}.tiles must be a list`);
+        validateTiles({ tiles: page.tiles }, at);
+      });
     }
 
-    // ---- Bootstrap ----
-
-    async function loadTheme(themeValue) {
-      if (typeof themeValue === "string") {
-        const path = `themes/${themeValue}.yaml`;
-        const res = await fetch(path);
-        if (!res.ok) throw new Error(`Could not load theme "${themeValue}" (${path} returned HTTP ${res.status})`);
-        return load(await res.text());
-      }
-      return themeValue;
+    function getActivePageId(config) {
+      const hash = (location.hash || "#").slice(1);
+      const valid = config.pages.some(p => p.id === hash);
+      return valid ? hash : config.pages[0].id;
     }
 
-    try {
-      const r = await fetch("./config.yaml");
-      if (!r.ok) throw new Error(`Could not load config.yaml (HTTP ${r.status})`);
-      const config = load(await r.text());
-      config.theme = await loadTheme(config.theme);
-      validate(config);
+    function render(config) {
+      const pageId = getActivePageId(config);
+      const page = config.pages.find(p => p.id === pageId);
+      if (!page) return;
+
+      document.title = `${config.profile.name} x Limn: ${page.title}`;
 
       const app = document.getElementById("app");
       app.innerHTML = "";
-
       applyTheme(config.theme);
       app.appendChild(renderProfile(config.profile));
 
@@ -64,8 +104,21 @@
       tilesEl.style.display = "contents";
       app.appendChild(tilesEl);
 
-      config.tiles.forEach(renderTile);
-      createIcons({ icons });
+      page.tiles.forEach((tile) => renderTile(tile, config));
+    }
+
+    // ---- Bootstrap ----
+
+    try {
+      const r = await fetch("./config.yaml");
+      if (!r.ok) throw new Error(`Could not load config.yaml (HTTP ${r.status})`);
+      let config = load(await r.text());
+      config = normalizeConfig(config);
+      config.theme = await loadTheme(config.theme);
+      validate(config);
+
+      render(config);
+      window.addEventListener("hashchange", () => render(config));
     } catch (err) {
       showError(err, "Config error");
     }

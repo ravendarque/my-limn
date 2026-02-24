@@ -1,0 +1,3 @@
+Firefox can’t establish a connection to the server at ws://localhost:3000//ws. localhost:3000:157:17
+Instagram embed placeholder is being shimmed by Firefox. See https://bugzilla.mozilla.org/show_bug.cgi?id=1892173 for details. sandbox eval code:1:9
+ReferenceError: Sanitizer is not defined 2 smartblock_embeds_helper.js:233:27

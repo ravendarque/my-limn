@@ -1,5 +1,8 @@
 .tile-embed {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .embed-label {
@@ -9,6 +12,12 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.embed-wrapper {
+  width: 100%;
+  max-width: 560px;
 }
 
 .embed-wrapper iframe {
@@ -17,4 +26,24 @@
   aspect-ratio: 16 / 9;
   border: none;
   display: block;
+}
+
+.embed-wrapper iframe.instagram-embed {
+  aspect-ratio: 400 / 480;
+  min-height: 480px;
+}
+
+.embed-fallback {
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.embed-fallback a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.embed-fallback a:hover {
+  text-decoration: underline;
 }

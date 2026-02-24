@@ -32,3 +32,7 @@
   height: 18px;
   flex-shrink: 0;
 }
+.tile-link a .ti {
+  font-size: 18px;
+  flex-shrink: 0;
+}

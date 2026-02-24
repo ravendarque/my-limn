@@ -2,6 +2,18 @@
  * Shared engine functions — used by index.html and themes.html
  */
 
+import { load } from "https://esm.sh/js-yaml@4";
+
+export async function loadTheme(themeValue, basePrefix = "") {
+  if (typeof themeValue === "string") {
+    const path = `${basePrefix}themes/${themeValue}.yaml`;
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`Could not load theme "${themeValue}" (${path} returned HTTP ${res.status})`);
+    return load(await res.text());
+  }
+  return themeValue;
+}
+
 export function applyTheme(theme) {
   const s = document.documentElement.style;
   s.setProperty("--color-bg",          theme.background);
@@ -44,11 +56,17 @@ export function renderProfile({ name, bio, image }) {
   return el;
 }
 
+export function getInitials(name) {
+  const n = (name || "").trim();
+  if (!n) return "?";
+  return n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
 export function makeInitials(name) {
   const div = document.createElement("div");
   div.className = "profile-initials";
   div.setAttribute("aria-hidden", "true");
-  div.textContent = name.trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  div.textContent = getInitials(name);
   return div;
 }
 
@@ -65,7 +83,7 @@ function hintForError(err) {
   if (msg.includes("theme") && (msg.includes("load") || msg.includes("404")))
     return "The themes/ folder may be missing or the theme file wasn't included. Re-download from the configurator and deploy the full zip contents.";
   if (msg.includes("failed to fetch") || msg.includes("import"))
-    return "A script or module failed to load. Check that all engine files (engine.js, tiles/*.js) are present, and that esm.sh is not blocked.";
+    return "A script or module failed to load. Check that all engine files (limn-engine.js, tiles/*.js) are present, and that esm.sh is not blocked.";
   if (msg.includes("tiles[") || msg.includes("missing required"))
     return "Check your config.yaml syntax. Each tile needs the required fields — see the examples/ folder.";
   return null;

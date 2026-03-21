@@ -30,6 +30,10 @@ pages:
             label: wearebeyondborders.com
       - type: heading
         text: "The Big Climbing Tour 2026"
+      - type: link
+        url: "https://ravendarque.com/logbook"
+        label: Logbook
+        icon: check
       - type: text
         content: "This is the rough agenda for the big climbing tour. If you want to come join me at any point along the way, I would love that, drop me a message!"
       - type: calendar
@@ -113,3 +117,5 @@ pages:
         url: "https://www.instagram.com/thebethsquad"
         label: Instagram
         icon: brand-instagram
+      - type: embed
+        html: "https://www.youtube.com/watch?v=VqNqDFCrjWs"

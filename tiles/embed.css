@@ -47,3 +47,9 @@
 .embed-fallback a:hover {
   text-decoration: underline;
 }
+
+.embed-fallback-note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}

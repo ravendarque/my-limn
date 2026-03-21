@@ -11,7 +11,11 @@
   font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--color-text);
   white-space: pre;
   padding: 0;
+}
+
+/* Fallback when no language / Prism not loaded */
+.tile-codeblock code:not([class*="language-"]) {
+  color: var(--color-text);
 }

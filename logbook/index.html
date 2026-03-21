@@ -3,67 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UK Tour Logbook 2026</title>
+  <title>UK Climbing Logbook 2026</title>
+  <link rel="stylesheet" href="../limn-engine.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.36.1/dist/tabler-icons.min.css">
   <style>
+    /* Grade colours — semantic, stay fixed regardless of theme */
     :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface2: #222;
-      --border: #2e2e2e;
-      --text: #e8e8e8;
-      --muted: #888;
-      --accent: #f97316;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #f87171;
-      --blue: #60a5fa;
+      --grade-7b: #f87171;
+      --grade-7a: #facc15;
+      --grade-6c: #fb923c;
+      --grade-6b: #4ade80;
+      --grade-other: #60a5fa;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--color-bg);
+      color: var(--color-text);
       padding: 2rem 1rem;
-      line-height: 1.6;
     }
+
     .container { max-width: 900px; margin: 0 auto; }
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 0.25rem;
-    }
-    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+
+    h1 { font-size: 2rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.25rem; }
+    .subtitle { color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
+
     .meta-bar {
       display: flex; gap: 1rem; flex-wrap: wrap;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 1rem 1.25rem;
       margin-bottom: 1.5rem;
       font-size: 0.9rem;
     }
-    .meta-bar span { color: var(--muted); }
-    .meta-bar strong { color: var(--text); }
+    .meta-bar span { color: var(--color-text-muted); }
+    .meta-bar strong { color: var(--color-text); }
+
     .legend {
       display: flex; gap: 1.25rem; flex-wrap: wrap;
       margin-bottom: 2rem;
       font-size: 0.85rem;
-      color: var(--muted);
+      color: var(--color-text-muted);
     }
+
     .warning-box {
-      background: #2a1f0a;
-      border: 1px solid #7c4a00;
+      background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg));
+      border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
       border-radius: 8px;
       padding: 1rem 1.25rem;
       margin-bottom: 2rem;
       font-size: 0.9rem;
     }
-    .warning-box h3 { color: var(--yellow); margin-bottom: 0.5rem; }
-    .warning-box p { color: #d4a96a; margin-bottom: 0.35rem; }
+    .warning-box h3 { color: var(--color-accent); margin-bottom: 0.5rem; }
+    .warning-box p { color: var(--color-text); margin-bottom: 0.35rem; opacity: 0.85; }
+
     .section {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 10px;
       margin-bottom: 1.5rem;
       overflow: hidden;
@@ -71,98 +67,109 @@
     .section-header {
       display: flex; align-items: center; gap: 0.75rem;
       padding: 1rem 1.25rem;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
+      background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
+      border-bottom: 1px solid var(--color-border);
     }
     .section-num {
-      background: var(--accent);
-      color: #000;
+      background: var(--color-accent);
+      color: var(--color-accent-text);
       font-weight: 700;
       font-size: 0.8rem;
       padding: 0.2rem 0.55rem;
       border-radius: 4px;
     }
-    .section-title { font-weight: 600; font-size: 1.05rem; }
-    .section-dates { color: var(--muted); font-size: 0.85rem; margin-left: auto; }
+    .section-title { font-weight: 600; font-size: 1.05rem; color: var(--color-text); }
+    .section-dates { color: var(--color-text-muted); font-size: 0.85rem; margin-left: auto; }
     .section-body { padding: 1.25rem; }
+
     .rock-info {
       display: flex; gap: 1.5rem; flex-wrap: wrap;
       font-size: 0.85rem;
       margin-bottom: 1rem;
-      color: var(--muted);
+      color: var(--color-text-muted);
     }
-    .rock-info span strong { color: var(--text); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-    }
+    .rock-info span strong { color: var(--color-text); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 1rem; }
     thead th {
       text-align: left;
       padding: 0.5rem 0.75rem;
-      color: var(--muted);
+      color: var(--color-text-muted);
       font-weight: 500;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--color-border);
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    tbody tr { border-bottom: 1px solid #1e1e1e; }
+    tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent); }
     tbody tr:last-child { border-bottom: none; }
-    tbody td { padding: 0.6rem 0.75rem; vertical-align: top; }
-    .grade {
-      font-weight: 600;
-      font-family: monospace;
-      font-size: 0.9rem;
-    }
-    .grade-7b { color: var(--red); }
-    .grade-7a { color: var(--yellow); }
-    .grade-6c { color: #fb923c; }
-    .grade-6b { color: var(--green); }
-    .grade-other { color: var(--blue); }
+    tbody td { padding: 0.6rem 0.75rem; vertical-align: top; color: var(--color-text); }
+
+    .grade { font-weight: 600; font-family: monospace; font-size: 0.9rem; }
+    .grade-7b  { color: var(--grade-7b); }
+    .grade-7a  { color: var(--grade-7a); }
+    .grade-6c  { color: var(--grade-6c); }
+    .grade-6b  { color: var(--grade-6b); }
+    .grade-other { color: var(--grade-other); }
     .status { font-size: 1.1rem; }
-    .project-row { background: #1f1208; }
+
+    .project-row { background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)); }
+
     .tips-box {
-      background: #0f1a0f;
-      border: 1px solid #1f3a1f;
+      background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
+      border: 1px solid var(--color-border);
       border-radius: 6px;
       padding: 0.75rem 1rem;
       font-size: 0.85rem;
-      color: #9bc99b;
+      color: var(--color-text);
+      opacity: 0.9;
       margin-top: 0.5rem;
     }
-    .tips-box strong { color: #4ade80; }
+    .tips-box strong { color: var(--color-accent); }
+
     .sub-heading {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--muted);
+      color: var(--color-text-muted);
       margin: 1rem 0 0.4rem;
       font-weight: 600;
     }
+
     .appendix {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 10px;
       padding: 1.25rem;
       margin-bottom: 1.5rem;
     }
-    .appendix h2 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--accent); }
+    .appendix h2 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--color-accent); }
+
     .checklist { list-style: none; font-size: 0.9rem; }
     .checklist li {
       padding: 0.3rem 0;
-      color: var(--muted);
-      border-bottom: 1px solid #1a1a1a;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
     }
     .checklist li:last-child { border-bottom: none; }
-    .checklist li::before { content: "☐ "; color: var(--accent); }
-    .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem; }
+    .checklist li::before { content: "☐ "; color: var(--color-accent); }
+
+    .footer { text-align: center; color: var(--color-text-muted); font-size: 0.8rem; margin-top: 2rem; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--color-accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .back-link:hover { opacity: 0.8; }
   </style>
 </head>
 <body>
-<div class="container">
+<div id="app-loading" style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--color-text-muted,#888)">Loading…</div>
+<div class="container" id="logbook" style="display:none">
+
+  <a href="/" class="back-link"><i class="ti ti-arrow-left"></i> Back</a>
 
   <h1>🧗 UK Tour Logbook 2026</h1>
   <p class="subtitle">Nix · Mar 31 – May 12 · 9 destinations</p>
@@ -208,7 +215,7 @@
           <tr><td>Burlap</td><td class="grade grade-other">6A+</td><td class="status">🎯</td><td>Good intro problem, flake feature</td></tr>
           <tr><td>Thin Flake</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Up thin flake to jugs — quality line</td></tr>
           <tr><td>Serenade Arete</td><td class="grade grade-6c">6C+</td><td class="status">🎯 ⭐</td><td>One of the best at Bowles</td></tr>
-          <tr><td>Thin Flake Sit</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Sit start extension — <strong>your 7B here</strong></td></tr>
+          <tr class="project-row"><td>Thin Flake Sit</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Sit start extension — <strong>your 7B here</strong></td></tr>
         </tbody>
       </table>
       <div class="tips-box"><strong>Tips:</strong> No climbing on damp sandstone — damages the rock permanently. Check conditions before driving down. Ethics vary by wall — some areas ban chalk, check on-site signage.</div>
@@ -234,7 +241,7 @@
           <tr><td>Modern Nightmare</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Reportedly soft — good confidence builder</td></tr>
           <tr><td>Neil Armstrong</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Cuttings Boulderfield classic</td></tr>
           <tr><td>Lost Decade</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Compression style — check it suits you</td></tr>
-          <tr><td>Lightning Strike</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Cuttings Boulderfield — Hermit's Hole area. <strong>Your 7B here.</strong></td></tr>
+          <tr class="project-row"><td>Lightning Strike</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Cuttings Boulderfield — Hermit's Hole area. <strong>Your 7B here.</strong></td></tr>
         </tbody>
       </table>
       <div class="tips-box"><strong>Tips:</strong> Cuttings Boulderfield is your zone (short, powerful, good holds). New Cuttings next door has the 7B+ test pieces — save those for later trips. Problems are sheltered and climbable in most weather.</div>
@@ -259,10 +266,10 @@
         <tbody>
           <tr><td>Platform low/mid-grade problems</td><td class="grade grade-other">5+–6B</td><td class="status">🎯</td><td>Good spread on wave-cut platform</td></tr>
           <tr><td>Purple Haze Block (lower)</td><td class="grade grade-7a">6B–7A</td><td class="status">🎯</td><td>Multiple lower lines on the block</td></tr>
-          <tr><td>Purple Haze Block (top)</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Harder line on the block — <strong>your 7B here.</strong> Confirm name on 27crags before visiting.</td></tr>
+          <tr class="project-row"><td>Purple Haze Block (top)</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Harder line on the block — <strong>your 7B here.</strong> Confirm name on 27crags before visiting.</td></tr>
         </tbody>
       </table>
-      <div class="tips-box"><strong>Tips:</strong> Access down to the boulders is the main challenge — faint trail leads to a cliff edge. You need to find the correct descent, check UKC forums for current beta. Rock slippery when wet. Niall Grimes' <em>Boulder Britain</em> has the best coverage of this spot.</div>
+      <div class="tips-box"><strong>Tips:</strong> Access down to the boulders is the main challenge — faint trail leads to a cliff edge. Check UKC forums for current descent beta. Rock slippery when wet. Niall Grimes' <em>Boulder Britain</em> has the best coverage.</div>
     </div>
   </div>
 
@@ -295,7 +302,7 @@
           <tr class="project-row"><td><strong>Lizard Brain</strong></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Solly KD FA — <strong>main project</strong></td></tr>
         </tbody>
       </table>
-      <div class="tips-box"><strong>Tips:</strong> Solly KD's home crag — new problems found constantly. Cool weather essential (rock goes greasy when warm/humid). Coastal access involves scrambling. Tight local community — respectful approach appreciated. 4 days here is the right call for the projects.</div>
+      <div class="tips-box"><strong>Tips:</strong> Solly KD's home crag — new problems found constantly. Cool weather essential (rock goes greasy when warm/humid). Coastal access involves scrambling. Tight local community — respectful approach appreciated.</div>
     </div>
   </div>
 
@@ -318,7 +325,7 @@
           <tr><td>Boysen's Groove</td><td class="grade grade-6b">6B</td><td class="status">🎯 ⭐</td><td>One of the best problems in North Wales</td></tr>
           <tr><td>Lordy, Lordy</td><td class="grade grade-6c">6C</td><td class="status">🎯 ⭐</td><td>Quality line on excellent rock</td></tr>
           <tr><td>King of Drunks</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic 7A — among the best in Wales</td></tr>
-          <tr><td>Cruella</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Dolerite — high quality rock, Llanberis area. <strong>Your 7B here.</strong></td></tr>
+          <tr class="project-row"><td>Cruella</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Dolerite — high quality rock, Llanberis area. <strong>Your 7B here.</strong></td></tr>
           <tr><td>Supercrack (Aberglaslyn)</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Short detour south — worth it</td></tr>
         </tbody>
       </table>
@@ -343,7 +350,7 @@
         <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
         <tbody>
           <tr><td>Various across the grades</td><td class="grade grade-6b">6A–7A</td><td class="status">🎯</td><td>Good spread, short walk-in, granite quality. Use LakesBloc to pick lines on the day.</td></tr>
-          <tr><td>Equipoise</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Kentmere — <strong>your 7B here.</strong> May be graded 7B+, verify on the day.</td></tr>
+          <tr class="project-row"><td>Equipoise</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Kentmere — <strong>your 7B here.</strong> May be graded 7B+, verify on the day.</td></tr>
         </tbody>
       </table>
       <div class="sub-heading">St Bees (Coastal)</div>
@@ -388,10 +395,10 @@
           <tr><td>Red Rum</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Quality mid-grade</td></tr>
           <tr><td>Monty Python's</td><td class="grade grade-6c">6C+</td><td class="status">🎯</td><td>Good challenge</td></tr>
           <tr><td>Hitchhiker's Guide</td><td class="grade grade-7a">7A+</td><td class="status">🎯</td><td>Stretch goal — sandstone 7A+ is serious</td></tr>
-          <tr><td><em>7B — confirm via 27crags</em></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Northumberland grades are stiff — a local 7A+ will feel like 7B elsewhere. Check 27crags before visiting for current confirmed 7B name.</td></tr>
+          <tr class="project-row"><td><em>7B — confirm via 27crags</em></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Grades are stiff — a local 7A+ feels like 7B elsewhere. Check 27crags for current confirmed 7B name.</td></tr>
         </tbody>
       </table>
-      <div class="tips-box"><strong>Tips:</strong> Both crags are 15 min apart. Rock is soft — no brushing, careful with feet. Kyloe is forested so can be damp — better on dry days with sun. <strong>May 2:</strong> Hadrian's Wall en route to Cairngorms — plan the stop on the drive north.</div>
+      <div class="tips-box"><strong>Tips:</strong> Both crags are 15 min apart. Rock is soft — no brushing, careful with feet. Kyloe is forested so can be damp — better on dry days with sun. <strong>May 2:</strong> Hadrian's Wall en route to Cairngorms.</div>
     </div>
   </div>
 
@@ -417,7 +424,7 @@
           <tr><td>Jabberwocky</td><td class="grade grade-6c">6C</td><td class="status">🎯 ⭐</td><td>Quality mid-grade</td></tr>
           <tr><td>Vorpal Blade</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic 7A here</td></tr>
           <tr><td>The Dagger</td><td class="grade grade-7a">7A ⭐⭐⭐</td><td class="status">🎯 ⭐</td><td>Highly rated — one of the best</td></tr>
-          <tr><td>Drosera rotundifolia</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Duntelchaig — <strong>your 7B here.</strong> Confirmed quality line.</td></tr>
+          <tr class="project-row"><td>Drosera rotundifolia</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Duntelchaig — <strong>your 7B here.</strong> Confirmed quality line.</td></tr>
         </tbody>
       </table>
       <div class="sub-heading">Further Afield (day trips)</div>
@@ -427,7 +434,7 @@
           <tr><td>Big Lebowski</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Ruthven Boulder — different venue, worth a trip</td></tr>
         </tbody>
       </table>
-      <div class="tips-box"><strong>Tips:</strong> Duntelchaig is worth 2+ days alone. Granite needs cool temps for friction — early May is fine. Midges arrive late May so you should be OK, but bring repellent just in case. Dunlichity, Ashie Fort, and Tynrich are other crags nearby if you want variety.</div>
+      <div class="tips-box"><strong>Tips:</strong> Duntelchaig is worth 2+ days alone. Granite needs cool temps for friction — early May is fine. Midges arrive late May so you should be OK, but bring repellent just in case.</div>
     </div>
   </div>
 
@@ -450,7 +457,7 @@
           <tr><td>The High Road</td><td class="grade grade-other">3+</td><td class="status">🎯 ⭐</td><td>Accessible classic — traverses flake then up arete. Big and goes somewhere.</td></tr>
           <tr><td>Not To Be Taken Away</td><td class="grade grade-6b">6B+</td><td class="status">🎯 ⭐</td><td>Essential highball — committing</td></tr>
           <tr><td>Green Traverse</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic grit traverse</td></tr>
-          <tr><td>The Ace</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Stanage Plantation — <strong>your 7B here.</strong> Classic powerful grit problem.</td></tr>
+          <tr class="project-row"><td>The Ace</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Stanage Plantation — <strong>your 7B here.</strong> Classic powerful grit problem.</td></tr>
         </tbody>
       </table>
       <div class="sub-heading">Burbage</div>
@@ -470,7 +477,7 @@
           <tr><td>Mono Pocket Left (Stanton)</td><td class="grade grade-6c">6C</td><td class="status">🎯</td><td>Quality slab problem</td></tr>
         </tbody>
       </table>
-      <div class="tips-box"><strong>Tips:</strong> Grit is best in cool/cold dry conditions — go early mornings in May for best friction. Stanage is 1km+ long — Plantation and Far Right are the bouldering hotspots. 4 days here is a luxury, use every minute. Peak Bouldering (Vertebrate) is the bible.</div>
+      <div class="tips-box"><strong>Tips:</strong> Grit is best in cool/cold dry conditions — go early mornings in May for best friction. Stanage Plantation and Far Right are the bouldering hotspots. 4 days here is a luxury, use every minute. Peak Bouldering (Vertebrate) is the bible.</div>
     </div>
   </div>
 
@@ -501,5 +508,23 @@
   </div>
 
 </div>
+
+<script type="module">
+  import { load } from "https://esm.sh/js-yaml@4";
+  import { applyTheme, loadTheme } from "../limn-engine.js";
+
+  try {
+    const r = await fetch("../config.yaml");
+    if (!r.ok) throw new Error(`config.yaml not found (HTTP ${r.status})`);
+    const config = load(await r.text());
+    const theme = await loadTheme(config.theme, "../");
+    applyTheme(theme);
+  } catch (e) {
+    console.warn("Could not load theme from config.yaml:", e.message);
+  } finally {
+    document.getElementById("app-loading").style.display = "none";
+    document.getElementById("logbook").style.display = "";
+  }
+</script>
 </body>
 </html>

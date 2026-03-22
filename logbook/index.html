@@ -245,6 +245,23 @@
   // ── Config ───────────────────────────────────────────────────────────
   const DATA_URL = "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/logbook.json";
 
+  // ── Place → country map ──────────────────────────────────────────────
+  const PLACE_COUNTRY = {
+    "Magic Wood":          "Switzerland",
+    "Albarracín":          "Spain",
+    "Bosco Scorace":       "Italy",
+    "San Vito Lo Capo":    "Italy",
+    "Southern Sandstone":  "England",
+    "Portland":            "England",
+    "Tintagel":            "England",
+    "Culm Coast":          "England",
+    "Eryri":               "Wales",
+    "Lake District":       "England",
+    "Northumberland":      "England",
+    "Cairngorms":          "Scotland",
+    "Peak District":       "England",
+  };
+
   // ── Grade ordering ───────────────────────────────────────────────────
   const GRADE_ORDER = [
     "3","3+","4","4+","5","5+","5A","5A+","5B","5B+","5C",
@@ -412,8 +429,8 @@
       return `
         <div class="place-section${isCollapsed ? " collapsed" : ""}" data-place="${place}">
           <div class="place-header" data-place="${place}">
-            <span class="place-num">${String(idx).padStart(2,"0")}</span>
             <span class="place-name">${place}</span>
+            ${PLACE_COUNTRY[place] ? `<span style="color:var(--color-text-muted);font-size:.82rem">${PLACE_COUNTRY[place]}</span>` : ""}
             <span class="place-chevron">▾</span>
           </div>
           <div class="place-body">

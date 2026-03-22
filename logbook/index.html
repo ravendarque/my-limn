@@ -474,8 +474,7 @@
     const places = new Set(ALL_ENTRIES.map(e => e.place)).size;
     document.getElementById("subtitle").textContent =
       `${ALL_ENTRIES.length} problems · ${sends} sent · ${places} destinations`;
-    document.getElementById("footer").textContent =
-      `logbook.json · Raiven · ${new Date().getFullYear()}`;
+    document.getElementById("footer").textContent = "";
   }
 
   // ── Event delegation ─────────────────────────────────────────────────

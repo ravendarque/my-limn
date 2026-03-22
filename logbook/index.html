@@ -98,12 +98,12 @@
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--r);
-      margin-bottom: 1.25rem;
+      margin-bottom: .75rem;
       overflow: hidden;
     }
     .place-header {
-      display: flex; align-items: center; gap: .75rem;
-      padding: .85rem 1.1rem;
+      display: flex; align-items: center; gap: .6rem;
+      padding: .6rem .9rem;
       border-bottom: 1px solid var(--color-border);
       background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
       cursor: pointer;
@@ -130,9 +130,9 @@
     }
     thead th {
       text-align: left;
-      padding: .5rem .85rem;
+      padding: .35rem .65rem;
       color: var(--color-text-muted);
-      font-weight: 500; font-size: .75rem;
+      font-weight: 500; font-size: .72rem;
       text-transform: uppercase; letter-spacing: .05em;
       border-bottom: 1px solid var(--color-border);
       white-space: nowrap;
@@ -148,7 +148,7 @@
     tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent); }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface)); }
-    td { padding: .55rem .85rem; vertical-align: middle; }
+    td { padding: .35rem .65rem; vertical-align: middle; }
 
     /* ── Grade badge ─────────────────────────────────────────────── */
     .grade-badge {
@@ -159,27 +159,11 @@
       white-space: nowrap;
     }
 
-    /* ── Status badge ────────────────────────────────────────────── */
-    .status-badge {
-      display: inline-flex; align-items: center; gap: .3rem;
-      font-size: .78rem; font-weight: 500;
-      padding: .15rem .5rem;
-      border-radius: calc(var(--r) * .5);
-      white-space: nowrap;
-    }
-    .status-send     { background: color-mix(in srgb, #4ade80 15%, transparent); color: #4ade80; }
-    .status-flash    { background: color-mix(in srgb, #22d3ee 15%, transparent); color: #22d3ee; }
-    .status-project  { background: color-mix(in srgb, #fb923c 15%, transparent); color: #fb923c; }
-    .status-abandoned{ background: color-mix(in srgb, #94a3b8 15%, transparent); color: #94a3b8; }
-    .status-wishlist { background: color-mix(in srgb, #facc15 12%, transparent); color: #facc15; }
+    /* ── Status icon ─────────────────────────────────────────────── */
+    .status-icon { font-size: 1rem; cursor: default; line-height: 1; }
 
-    /* ── Type chip ───────────────────────────────────────────────── */
-    .type-chip {
-      font-size: .72rem; color: var(--color-text-muted);
-      border: 1px solid var(--color-border);
-      border-radius: calc(var(--r) * .5);
-      padding: .1rem .4rem;
-    }
+    /* ── Type text ───────────────────────────────────────────────── */
+    .type-text { font-size: .82rem; color: var(--color-text-muted); }
 
     /* ── Area tag ────────────────────────────────────────────────── */
     .area-tag { color: var(--color-text-muted); font-size: .82rem; }
@@ -301,14 +285,14 @@
   // ── Status ───────────────────────────────────────────────────────────
   function statusBadge(entry) {
     if (entry.status === "send" && entry.flash)
-      return `<span class="status-badge status-flash" title="Flash">⚡ Flash</span>`;
+      return `<span class="status-icon" title="Flash">⚡</span>`;
     if (entry.status === "send")
-      return `<span class="status-badge status-send" title="Send">✅ Send</span>`;
+      return `<span class="status-icon" title="Send">✅</span>`;
     if (entry.status === "project")
-      return `<span class="status-badge status-project" title="Project">🔥 Project</span>`;
+      return `<span class="status-icon" title="Project">🔥</span>`;
     if (entry.status === "abandoned")
-      return `<span class="status-badge status-abandoned" title="Abandoned">✗ Abandoned</span>`;
-    return `<span class="status-badge status-wishlist" title="Wishlist">⭐ Wishlist</span>`;
+      return `<span class="status-icon" title="Abandoned">❌</span>`;
+    return `<span class="status-icon" title="Wishlist">⭐</span>`;
   }
 
   // ── State ────────────────────────────────────────────────────────────
@@ -408,28 +392,20 @@
       const { col, dir } = getSort(place);
       const isCollapsed = state.collapsed.has(place);
 
-      const areaSet = [...new Set(items.map(e => e.area))];
-      const sendCount = items.filter(e => e.status === "send").length;
-
-      const thClass = (c) => {
-        if (c !== col) return `sortable`;
-        return `sortable sort-${dir}`;
-      };
+      const thClass = (c) => c !== col ? `sortable` : `sortable sort-${dir}`;
 
       const rows = sorted.map(e => `
         <tr>
-          <td>${statusBadge(e)}</td>
+          <td style="text-align:center;width:2rem">${statusBadge(e)}</td>
+          <td><span class="grade-badge" style="color:${gradeColor(e.grade)}">${e.grade}</span></td>
           <td>
             <span style="font-weight:500">${e.name}</span>
-            ${e.notes ? `<span class="notes-icon" title="${e.notes.replace(/"/g,'&quot;')}">  ℹ</span>` : ""}
+            ${e.notes ? `<span class="notes-icon" title="${e.notes.replace(/"/g,'&quot;')}"> ℹ</span>` : ""}
           </td>
           <td class="area-tag">${e.area}</td>
-          <td>
-            <span class="grade-badge" style="color:${gradeColor(e.grade)}">${e.grade}</span>
-          </td>
-          <td><span class="type-chip">${e.type}</span></td>
-          <td style="color:var(--color-text-muted);font-size:.82rem">${formatDate(e.date)}</td>
-          <td>${e.video ? `<a class="video-link" href="${e.video}" target="_blank" rel="noopener">▶ Watch</a>` : ""}</td>
+          <td class="type-text">${e.type}</td>
+          <td style="color:var(--color-text-muted);font-size:.82rem;white-space:nowrap">${formatDate(e.date)}</td>
+          <td style="text-align:center;width:2rem">${e.video ? `<a class="video-link" href="${e.video}" target="_blank" rel="noopener" title="Watch video">▶</a>` : ""}</td>
         </tr>
       `).join("");
 
@@ -438,30 +414,25 @@
           <div class="place-header" data-place="${place}">
             <span class="place-num">${String(idx).padStart(2,"0")}</span>
             <span class="place-name">${place}</span>
-            <span class="place-meta">
-              <span>${items.length} problems</span>
-              ${sendCount > 0 ? `<span>✅ ${sendCount} sent</span>` : ""}
-              <span>${areaSet.join(" · ")}</span>
-            </span>
             <span class="place-chevron">▾</span>
           </div>
           <div class="place-body">
             <table>
               <thead>
                 <tr>
-                  <th>Status</th>
-                  <th class="${thClass("name")}" data-sort="name" data-place="${place}">
-                    Name <i class="sort-icon"></i>
-                  </th>
-                  <th>Area</th>
+                  <th style="width:2rem"></th>
                   <th class="${thClass("grade")}" data-sort="grade" data-place="${place}">
                     Grade <i class="sort-icon"></i>
                   </th>
+                  <th class="${thClass("name")}" data-sort="name" data-place="${place}">
+                    Name <i class="sort-icon"></i>
+                  </th>
+                  <th>Sector</th>
                   <th>Type</th>
                   <th class="${thClass("date")}" data-sort="date" data-place="${place}">
                     Date <i class="sort-icon"></i>
                   </th>
-                  <th>Video</th>
+                  <th style="width:2rem"></th>
                 </tr>
               </thead>
               <tbody>

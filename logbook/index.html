@@ -3,528 +3,570 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UK Climbing Logbook 2026</title>
+  <title>Climbing Logbook</title>
   <link rel="stylesheet" href="../limn-engine.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.36.1/dist/tabler-icons.min.css">
   <style>
-    /* Grade colours — semantic, stay fixed regardless of theme */
+    /* ── Grade colours — semantic, theme-independent ─────────────── */
     :root {
-      --grade-7b: #f87171;
-      --grade-7a: #facc15;
-      --grade-6c: #fb923c;
-      --grade-6b: #4ade80;
-      --grade-other: #60a5fa;
+      --grade-easy:  #94a3b8;
+      --grade-6a:    #22d3ee;
+      --grade-6b:    #4ade80;
+      --grade-6c:    #a3e635;
+      --grade-7a:    #facc15;
+      --grade-7b:    #fb923c;
+      --grade-7c:    #f87171;
+      --grade-8a:    #c084fc;
     }
 
-    body {
-      background: var(--color-bg);
-      color: var(--color-text);
-      padding: 2rem 1rem;
+    /* ── Corners support ─────────────────────────────────────────── */
+    :root { --r: 8px; }
+    body[data-corners="sharp"] { --r: 0px; }
+
+    /* ── Layout ──────────────────────────────────────────────────── */
+    body { background: var(--color-bg); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+    #logbook-app { max-width: 960px; margin: 0 auto; }
+
+    a.back-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--color-accent); text-decoration: none;
+      font-size: .9rem; margin-bottom: 1.5rem;
     }
+    a.back-link:hover { opacity: .75; }
 
-    .container { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 2rem; font-weight: 700; color: var(--color-accent); margin-bottom: .2rem; }
+    .subtitle { color: var(--color-text-muted); font-size: .9rem; margin-bottom: 1.5rem; }
 
-    h1 { font-size: 2rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.25rem; }
-    .subtitle { color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
-
-    .meta-bar {
-      display: flex; gap: 1rem; flex-wrap: wrap;
+    /* ── Stats bar ───────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex; flex-wrap: wrap; gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: .4rem;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
+      border-radius: calc(var(--r) * 2);
+      padding: .35rem .75rem;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .stat-pill:hover { border-color: var(--color-accent); }
+    .stat-pill.active { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); }
+    .stat-pill .count { font-weight: 700; color: var(--color-text); }
+    .stat-pill .label { color: var(--color-text-muted); }
+
+    /* ── Controls ────────────────────────────────────────────────── */
+    .controls {
+      display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
       margin-bottom: 1.5rem;
-      font-size: 0.9rem;
     }
-    .meta-bar span { color: var(--color-text-muted); }
-    .meta-bar strong { color: var(--color-text); }
-
-    .legend {
-      display: flex; gap: 1.25rem; flex-wrap: wrap;
-      margin-bottom: 2rem;
-      font-size: 0.85rem;
-      color: var(--color-text-muted);
-    }
-
-    .warning-box {
-      background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg));
-      border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-    }
-    .warning-box h3 { color: var(--color-accent); margin-bottom: 0.5rem; }
-    .warning-box p { color: var(--color-text); margin-bottom: 0.35rem; opacity: 0.85; }
-
-    .section {
+    .type-toggle {
+      display: flex;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 10px;
-      margin-bottom: 1.5rem;
+      border-radius: var(--r);
       overflow: hidden;
     }
-    .section-header {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 1rem 1.25rem;
-      background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
-      border-bottom: 1px solid var(--color-border);
-    }
-    .section-num {
-      background: var(--color-accent);
-      color: var(--color-accent-text);
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 4px;
-    }
-    .section-title { font-weight: 600; font-size: 1.05rem; color: var(--color-text); }
-    .section-dates { color: var(--color-text-muted); font-size: 0.85rem; margin-left: auto; }
-    .section-body { padding: 1.25rem; }
-
-    .rock-info {
-      display: flex; gap: 1.5rem; flex-wrap: wrap;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+    .type-btn {
+      padding: .4rem .85rem;
+      font-size: .82rem;
+      border: none;
+      background: none;
       color: var(--color-text-muted);
+      cursor: pointer;
+      transition: background .15s, color .15s;
     }
-    .rock-info span strong { color: var(--color-text); }
+    .type-btn.active { background: var(--color-accent); color: var(--color-accent-text); }
 
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 1rem; }
-    thead th {
-      text-align: left;
-      padding: 0.5rem 0.75rem;
-      color: var(--color-text-muted);
-      font-weight: 500;
-      border-bottom: 1px solid var(--color-border);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent); }
-    tbody tr:last-child { border-bottom: none; }
-    tbody td { padding: 0.6rem 0.75rem; vertical-align: top; color: var(--color-text); }
-
-    .grade { font-weight: 600; font-family: monospace; font-size: 0.9rem; }
-    .grade-7b  { color: var(--grade-7b); }
-    .grade-7a  { color: var(--grade-7a); }
-    .grade-6c  { color: var(--grade-6c); }
-    .grade-6b  { color: var(--grade-6b); }
-    .grade-other { color: var(--grade-other); }
-    .status { font-size: 1.1rem; }
-
-    .project-row { background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)); }
-
-    .tips-box {
-      background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
-      font-size: 0.85rem;
-      color: var(--color-text);
-      opacity: 0.9;
-      margin-top: 0.5rem;
-    }
-    .tips-box strong { color: var(--color-accent); }
-
-    .sub-heading {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-text-muted);
-      margin: 1rem 0 0.4rem;
-      font-weight: 600;
-    }
-
-    .appendix {
+    .search-box {
+      flex: 1; min-width: 160px;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
+      border-radius: var(--r);
+      padding: .4rem .85rem;
+      color: var(--color-text);
+      font-size: .9rem;
+      outline: none;
     }
-    .appendix h2 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--color-accent); }
+    .search-box::placeholder { color: var(--color-text-muted); }
+    .search-box:focus { border-color: var(--color-accent); }
 
-    .checklist { list-style: none; font-size: 0.9rem; }
-    .checklist li {
-      padding: 0.3rem 0;
+    /* ── Place sections ──────────────────────────────────────────── */
+    .place-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .place-header {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .85rem 1.1rem;
+      border-bottom: 1px solid var(--color-border);
+      background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
+      cursor: pointer;
+      user-select: none;
+    }
+    .place-header:hover { background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface)); }
+    .place-num {
+      background: var(--color-accent); color: var(--color-accent-text);
+      font-size: .72rem; font-weight: 700;
+      padding: .15rem .45rem; border-radius: calc(var(--r) * .5);
+    }
+    .place-name { font-weight: 600; font-size: 1rem; flex: 1; }
+    .place-meta { color: var(--color-text-muted); font-size: .8rem; display: flex; gap: .75rem; }
+    .place-chevron { color: var(--color-text-muted); font-size: .8rem; transition: transform .2s; }
+    .place-section.collapsed .place-chevron { transform: rotate(-90deg); }
+    .place-section.collapsed .place-body { display: none; }
+
+    .place-body { overflow-x: auto; }
+
+    /* ── Table ───────────────────────────────────────────────────── */
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: .88rem; min-width: 520px;
+    }
+    thead th {
+      text-align: left;
+      padding: .5rem .85rem;
       color: var(--color-text-muted);
-      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+      font-weight: 500; font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .05em;
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
     }
-    .checklist li:last-child { border-bottom: none; }
-    .checklist li::before { content: "☐ "; color: var(--color-accent); }
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { color: var(--color-text); }
+    th .sort-icon { margin-left: .3rem; opacity: .4; font-style: normal; }
+    th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--color-accent); }
+    th.sort-asc .sort-icon::after  { content: "↑"; }
+    th.sort-desc .sort-icon::after { content: "↓"; }
+    th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: "↕"; }
 
-    .footer { text-align: center; color: var(--color-text-muted); font-size: 0.8rem; margin-top: 2rem; }
-    .back-link {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      color: var(--color-accent);
-      text-decoration: none;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
+    tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface)); }
+    td { padding: .55rem .85rem; vertical-align: middle; }
+
+    /* ── Grade badge ─────────────────────────────────────────────── */
+    .grade-badge {
+      font-family: monospace; font-weight: 700; font-size: .85rem;
+      padding: .15rem .45rem;
+      border-radius: calc(var(--r) * .5);
+      background: color-mix(in srgb, currentColor 12%, transparent);
+      white-space: nowrap;
     }
-    .back-link:hover { opacity: 0.8; }
+
+    /* ── Status badge ────────────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .78rem; font-weight: 500;
+      padding: .15rem .5rem;
+      border-radius: calc(var(--r) * .5);
+      white-space: nowrap;
+    }
+    .status-send     { background: color-mix(in srgb, #4ade80 15%, transparent); color: #4ade80; }
+    .status-flash    { background: color-mix(in srgb, #22d3ee 15%, transparent); color: #22d3ee; }
+    .status-project  { background: color-mix(in srgb, #fb923c 15%, transparent); color: #fb923c; }
+    .status-abandoned{ background: color-mix(in srgb, #94a3b8 15%, transparent); color: #94a3b8; }
+    .status-wishlist { background: color-mix(in srgb, #facc15 12%, transparent); color: #facc15; }
+
+    /* ── Type chip ───────────────────────────────────────────────── */
+    .type-chip {
+      font-size: .72rem; color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+      border-radius: calc(var(--r) * .5);
+      padding: .1rem .4rem;
+    }
+
+    /* ── Area tag ────────────────────────────────────────────────── */
+    .area-tag { color: var(--color-text-muted); font-size: .82rem; }
+
+    /* ── Video link ──────────────────────────────────────────────── */
+    .video-link {
+      color: var(--color-accent); font-size: .8rem;
+      text-decoration: none; display: inline-flex; align-items: center; gap: .2rem;
+    }
+    .video-link:hover { opacity: .75; }
+
+    /* ── Notes tooltip ───────────────────────────────────────────── */
+    .notes-icon { cursor: help; color: var(--color-text-muted); font-size: .9rem; }
+
+    /* ── Empty state ─────────────────────────────────────────────── */
+    .empty-row td {
+      text-align: center; color: var(--color-text-muted);
+      padding: 2rem; font-size: .9rem;
+    }
+
+    /* ── Loading / error ─────────────────────────────────────────── */
+    #loading {
+      display: flex; align-items: center; justify-content: center;
+      height: 60vh; color: var(--color-text-muted); flex-direction: column; gap: .75rem;
+    }
+    .spinner {
+      width: 32px; height: 32px; border: 2px solid var(--color-border);
+      border-top-color: var(--color-accent); border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: color-mix(in srgb, #f87171 10%, var(--color-bg));
+      border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
+      border-radius: var(--r); padding: 1rem 1.25rem; color: var(--color-text);
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    .footer { text-align: center; color: var(--color-text-muted); font-size: .78rem; margin-top: 2rem; }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      .place-meta { display: none; }
+    }
   </style>
 </head>
 <body>
-<div id="app-loading" style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--color-text-muted,#888)">Loading…</div>
-<div class="container" id="logbook" style="display:none">
+<div id="logbook-app">
+  <div id="loading"><div class="spinner"></div><span>Loading logbook…</span></div>
+  <div id="app" style="display:none">
 
-  <a href="/" class="back-link"><i class="ti ti-arrow-left"></i> Back</a>
+    <a href="/" class="back-link">← Back</a>
+    <h1>Climbing Logbook</h1>
+    <p class="subtitle" id="subtitle"></p>
 
-  <h1>🧗 UK Tour Logbook 2026</h1>
-  <p class="subtitle">Nix · Mar 31 – May 12 · 9 destinations</p>
+    <div class="stats-bar" id="stats-bar"></div>
 
-  <div class="meta-bar">
-    <div><span>Grade range </span><strong>6B – 7B</strong></div>
-    <div><span>Max </span><strong>7B</strong></div>
-    <div><span>Climbing days </span><strong>28</strong></div>
-    <div><span>Total mileage </span><strong>~1,725 mi</strong></div>
-  </div>
-
-  <div class="legend">
-    <span>🎯 Want to tick</span>
-    <span>⭐ Classic</span>
-    <span>🔥 Project</span>
-    <span>✅ Ticked</span>
-    <span>❌ Didn't get it</span>
-  </div>
-
-  <div class="warning-box">
-    <h3>⚠️ Grading Notes</h3>
-    <p><strong>Southern Sandstone:</strong> Tech grade system — feels ~2 grades harder than Font equivalent. A Font 6B here will feel like a Font 7A elsewhere. Do not be surprised.</p>
-    <p><strong>Northumberland sandstone:</strong> Notoriously sandbagged. Treat every grade as a half-grade harder than labelled.</p>
-  </div>
-
-  <!-- 1. Southern Sandstone -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">01</span>
-      <span class="section-title">Southern Sandstone — Bowles Rocks</span>
-      <span class="section-dates">Apr 1–2</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Sandstone (soft, fine-grained)</span>
-        <span><strong>App:</strong> 27crags / UKC</span>
-        <span><strong>Paid entry:</strong> Yes — check Bowles website</span>
+    <div class="controls">
+      <div class="type-toggle" id="type-toggle">
+        <button class="type-btn active" data-type="all">All</button>
+        <button class="type-btn" data-type="boulder">Boulder</button>
+        <button class="type-btn" data-type="lead">Lead</button>
       </div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Pig's Nose</td><td class="grade grade-other">5C</td><td class="status">🎯</td><td>Warmup classic</td></tr>
-          <tr><td>Burlap</td><td class="grade grade-other">6A+</td><td class="status">🎯</td><td>Good intro problem, flake feature</td></tr>
-          <tr><td>Thin Flake</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Up thin flake to jugs — quality line</td></tr>
-          <tr><td>Serenade Arete</td><td class="grade grade-6c">6C+</td><td class="status">🎯 ⭐</td><td>One of the best at Bowles</td></tr>
-          <tr class="project-row"><td>Thin Flake Sit</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Sit start extension — <strong>your 7B here</strong></td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> No climbing on damp sandstone — damages the rock permanently. Check conditions before driving down. Ethics vary by wall — some areas ban chalk, check on-site signage.</div>
+      <input class="search-box" id="search" placeholder="Search problems…" autocomplete="off">
     </div>
-  </div>
 
-  <!-- 2. Portland -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">02</span>
-      <span class="section-title">Portland — The Cuttings</span>
-      <span class="section-dates">Apr 4–5</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Portland limestone — pocketed, crimpy</span>
-        <span><strong>App:</strong> 27crags / UKC</span>
-      </div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Sacred Angel</td><td class="grade grade-6c">~6C/7A</td><td class="status">🎯</td><td>Easier than Last Rose — good entry point</td></tr>
-          <tr><td>Modern Nightmare</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Reportedly soft — good confidence builder</td></tr>
-          <tr><td>Neil Armstrong</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Cuttings Boulderfield classic</td></tr>
-          <tr><td>Lost Decade</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Compression style — check it suits you</td></tr>
-          <tr class="project-row"><td>Lightning Strike</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Cuttings Boulderfield — Hermit's Hole area. <strong>Your 7B here.</strong></td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Cuttings Boulderfield is your zone (short, powerful, good holds). New Cuttings next door has the 7B+ test pieces — save those for later trips. Problems are sheltered and climbable in most weather.</div>
-    </div>
-  </div>
+    <div id="sections"></div>
 
-  <!-- 3. Tintagel -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">03</span>
-      <span class="section-title">Tintagel</span>
-      <span class="section-dates">Apr 7–9</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Slate/schist wave-cut platform</span>
-        <span><strong>Tidal:</strong> ⚠️ Check times before going down</span>
-        <span><strong>App:</strong> 27crags / BMC RAD</span>
-      </div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Platform low/mid-grade problems</td><td class="grade grade-other">5+–6B</td><td class="status">🎯</td><td>Good spread on wave-cut platform</td></tr>
-          <tr><td>Purple Haze Block (lower)</td><td class="grade grade-7a">6B–7A</td><td class="status">🎯</td><td>Multiple lower lines on the block</td></tr>
-          <tr class="project-row"><td>Purple Haze Block (top)</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Harder line on the block — <strong>your 7B here.</strong> Confirm name on 27crags before visiting.</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Access down to the boulders is the main challenge — faint trail leads to a cliff edge. Check UKC forums for current descent beta. Rock slippery when wet. Niall Grimes' <em>Boulder Britain</em> has the best coverage.</div>
-    </div>
+    <div class="footer" id="footer"></div>
   </div>
-
-  <!-- 4. Culm Coast -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">04</span>
-      <span class="section-title">Culm Coast / Hartland</span>
-      <span class="section-dates">Apr 11–14</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Culm — compact carboniferous sandstone/shale</span>
-        <span><strong>Style:</strong> Slopey, coastal, technical</span>
-        <span><strong>App:</strong> 27crags</span>
-      </div>
-      <div class="sub-heading">Warmups</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>The Garden of Earthly Delights</td><td class="grade grade-6b">6B</td><td class="status">🎯 ⭐</td><td>Ruby Petch FA — from <em>The Way Down Here</em></td></tr>
-          <tr><td>Crockpit Lip Traverse</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Tom Newberry FA — intro to the rock style</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">Projects 🔥</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr class="project-row"><td><strong>Mach Loop</strong></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Kyle Whitehand FA — <strong>main project</strong></td></tr>
-          <tr class="project-row"><td><strong>Lizard Brain</strong></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Solly KD FA — <strong>main project</strong></td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Solly KD's home crag — new problems found constantly. Cool weather essential (rock goes greasy when warm/humid). Coastal access involves scrambling. Tight local community — respectful approach appreciated.</div>
-    </div>
-  </div>
-
-  <!-- 5. Eryri -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">05</span>
-      <span class="section-title">Eryri (Snowdonia)</span>
-      <span class="section-dates">Apr 21–23</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Rhyolite / slate — sharp, quality</span>
-        <span><strong>Area:</strong> Llanberis Pass (~300 problems)</span>
-        <span><strong>App:</strong> 27crags / UKC</span>
-      </div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Boysen's Groove</td><td class="grade grade-6b">6B</td><td class="status">🎯 ⭐</td><td>One of the best problems in North Wales</td></tr>
-          <tr><td>Lordy, Lordy</td><td class="grade grade-6c">6C</td><td class="status">🎯 ⭐</td><td>Quality line on excellent rock</td></tr>
-          <tr><td>King of Drunks</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic 7A — among the best in Wales</td></tr>
-          <tr class="project-row"><td>Cruella</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Dolerite — high quality rock, Llanberis area. <strong>Your 7B here.</strong></td></tr>
-          <tr><td>Supercrack (Aberglaslyn)</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Short detour south — worth it</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Problems are roadside in the Pass — minimal walk-in. Dinorwic Slate Quarry nearby for a completely different experience (polished, technical, unique). North Wales Bouldering guidebook is the essential reference.</div>
-    </div>
-  </div>
-
-  <!-- 6. Lake District -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">06</span>
-      <span class="section-title">Lake District — Kentmere + St Bees</span>
-      <span class="section-dates">Apr 25–27</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Granite (Kentmere) / Sandstone (St Bees)</span>
-        <span><strong>App:</strong> LakesBloc (Greg Chapman) — essential</span>
-      </div>
-      <div class="sub-heading">Kentmere</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Various across the grades</td><td class="grade grade-6b">6A–7A</td><td class="status">🎯</td><td>Good spread, short walk-in, granite quality. Use LakesBloc to pick lines on the day.</td></tr>
-          <tr class="project-row"><td>Equipoise</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Kentmere — <strong>your 7B here.</strong> May be graded 7B+, verify on the day.</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">St Bees (Coastal)</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Coastal sandstone problems</td><td class="grade grade-6b">6A–7A</td><td class="status">🎯</td><td>Different vibe to Kentmere — sea air, red sandstone. ~45 min west of Kentmere.</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> LakesBloc guidebook covers nearly 3,000 problems — use it to pick your lines for each day. Parking is limited in Kentmere village — arrive early. Woodwell is another quality venue if you want variety on day 3.</div>
-    </div>
-  </div>
-
-  <!-- 7. Northumberland -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">07</span>
-      <span class="section-title">Northumberland — Bowden Doors + Kyloe-in-the-Woods</span>
-      <span class="section-dates">Apr 29–May 1</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Sandstone — ⚠️ stiff grades, soft rock</span>
-        <span><strong>App:</strong> 27crags / UKC</span>
-      </div>
-      <div class="sub-heading">Bowden Doors</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Y-Front</td><td class="grade grade-other">6A+</td><td class="status">🎯 ⭐</td><td>Absolute classic — expect it to feel harder</td></tr>
-          <tr><td>Transformer</td><td class="grade grade-other">6A+</td><td class="status">🎯 ⭐</td><td>Classic companion to Y-Front</td></tr>
-          <tr><td>Dog Eat Dog</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Stiff Northumberland 7A — a proper test</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">Kyloe-in-the-Woods</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Swan Wall Direct</td><td class="grade grade-other">5+</td><td class="status">🎯</td><td>Accessible classic in the woods</td></tr>
-          <tr><td>Crucifix Traverse</td><td class="grade grade-other">6A</td><td class="status">🎯</td><td>Good traverse problem</td></tr>
-          <tr><td>The Elf Direct</td><td class="grade grade-other">6A</td><td class="status">🎯</td><td>Short and punchy</td></tr>
-          <tr><td>Red Rum</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Quality mid-grade</td></tr>
-          <tr><td>Monty Python's</td><td class="grade grade-6c">6C+</td><td class="status">🎯</td><td>Good challenge</td></tr>
-          <tr><td>Hitchhiker's Guide</td><td class="grade grade-7a">7A+</td><td class="status">🎯</td><td>Stretch goal — sandstone 7A+ is serious</td></tr>
-          <tr class="project-row"><td><em>7B — confirm via 27crags</em></td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Grades are stiff — a local 7A+ feels like 7B elsewhere. Check 27crags for current confirmed 7B name.</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Both crags are 15 min apart. Rock is soft — no brushing, careful with feet. Kyloe is forested so can be damp — better on dry days with sun. <strong>May 2:</strong> Hadrian's Wall en route to Cairngorms.</div>
-    </div>
-  </div>
-
-  <!-- 8. Cairngorms -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">08</span>
-      <span class="section-title">Cairngorms — Duntelchaig + surrounds</span>
-      <span class="section-dates">May 3–6</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Granite — rough, technical, friction-dependent</span>
-        <span><strong>Main venue:</strong> Duntelchaig (south of Loch Ness)</span>
-        <span><strong>App:</strong> 27crags</span>
-      </div>
-      <div class="sub-heading">Duntelchaig</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Lost and Found</td><td class="grade grade-other">6A+</td><td class="status">🎯 ⭐</td><td>Classic warmup</td></tr>
-          <tr><td>Eriophorum angustifolium</td><td class="grade grade-6b">6B</td><td class="status">🎯 ⭐</td><td>Must-do at Duntelchaig</td></tr>
-          <tr><td>Jabberwocky</td><td class="grade grade-6c">6C</td><td class="status">🎯 ⭐</td><td>Quality mid-grade</td></tr>
-          <tr><td>Vorpal Blade</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic 7A here</td></tr>
-          <tr><td>The Dagger</td><td class="grade grade-7a">7A ⭐⭐⭐</td><td class="status">🎯 ⭐</td><td>Highly rated — one of the best</td></tr>
-          <tr class="project-row"><td>Drosera rotundifolia</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Duntelchaig — <strong>your 7B here.</strong> Confirmed quality line.</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">Further Afield (day trips)</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Big Lebowski</td><td class="grade grade-7a">7A</td><td class="status">🎯</td><td>Ruthven Boulder — different venue, worth a trip</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Duntelchaig is worth 2+ days alone. Granite needs cool temps for friction — early May is fine. Midges arrive late May so you should be OK, but bring repellent just in case.</div>
-    </div>
-  </div>
-
-  <!-- 9. Peak District -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-num">09</span>
-      <span class="section-title">Peak District — Stanage + Burbage</span>
-      <span class="section-dates">May 8–11</span>
-    </div>
-    <div class="section-body">
-      <div class="rock-info">
-        <span><strong>Rock:</strong> Millstone grit — rough, powerful, iconic</span>
-        <span><strong>App:</strong> 27crags / Peak Bouldering guidebook (Vertebrate)</span>
-      </div>
-      <div class="sub-heading">Stanage</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>The High Road</td><td class="grade grade-other">3+</td><td class="status">🎯 ⭐</td><td>Accessible classic — traverses flake then up arete. Big and goes somewhere.</td></tr>
-          <tr><td>Not To Be Taken Away</td><td class="grade grade-6b">6B+</td><td class="status">🎯 ⭐</td><td>Essential highball — committing</td></tr>
-          <tr><td>Green Traverse</td><td class="grade grade-7a">7A</td><td class="status">🎯 ⭐</td><td>Classic grit traverse</td></tr>
-          <tr class="project-row"><td>The Ace</td><td class="grade grade-7b">7B</td><td class="status">🎯 🔥</td><td>Stanage Plantation — <strong>your 7B here.</strong> Classic powerful grit problem.</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">Burbage</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Beyond the End</td><td class="grade grade-other">4+</td><td class="status">🎯</td><td>Far end classic — worth the walk</td></tr>
-          <tr><td>Various 6B–7A</td><td class="grade grade-6b">6B–7A</td><td class="status">🎯</td><td>Strong spread across Burbage North/South/West — use guidebook</td></tr>
-        </tbody>
-      </table>
-      <div class="sub-heading">Worth a Drive (day trips)</div>
-      <table>
-        <thead><tr><th>Problem</th><th>Grade</th><th>Status</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Spring Slab (Roaches)</td><td class="grade grade-6c">6C–7B</td><td class="status">🎯</td><td>Slab specialist venue — great range</td></tr>
-          <tr><td>Appliance Friction (Stanton)</td><td class="grade grade-6b">6B</td><td class="status">🎯</td><td>Best slab venue in Peak when dry</td></tr>
-          <tr><td>Mono Pocket Left (Stanton)</td><td class="grade grade-6c">6C</td><td class="status">🎯</td><td>Quality slab problem</td></tr>
-        </tbody>
-      </table>
-      <div class="tips-box"><strong>Tips:</strong> Grit is best in cool/cold dry conditions — go early mornings in May for best friction. Stanage Plantation and Far Right are the bouldering hotspots. 4 days here is a luxury, use every minute. Peak Bouldering (Vertebrate) is the bible.</div>
-    </div>
-  </div>
-
-  <!-- Appendix -->
-  <div class="appendix">
-    <h2>📚 Guidebooks to Get</h2>
-    <ul class="checklist">
-      <li><strong>Southern Sandstone</strong> — Rockfax</li>
-      <li><strong>Boulder Britain</strong> — Niall Grimes (covers Tintagel + UK classics)</li>
-      <li><strong>North Wales Bouldering</strong> — covers Eryri / Llanberis Pass</li>
-      <li><strong>LakesBloc</strong> — Greg Chapman (essential, ~3,000 problems)</li>
-      <li><strong>Scottish Bouldering</strong> — covers Duntelchaig / Cairngorms</li>
-      <li><strong>Peak Bouldering</strong> — Vertebrate Publishing (the bible)</li>
-    </ul>
-  </div>
-
-  <div class="appendix">
-    <h2>📱 Apps</h2>
-    <ul class="checklist">
-      <li><strong>27crags</strong> — best for UK outdoor beta + topos</li>
-      <li><strong>TheCrag</strong> — good backup, solid logbook features</li>
-      <li><strong>UKC logbook</strong> — useful for grade consensus / conditions</li>
-    </ul>
-  </div>
-
-  <div class="footer">
-    Created by Raiven · 2026-03-21 · Sources: UKC, UKBouldering, 27crags, Climber Magazine
-  </div>
-
 </div>
 
 <script type="module">
   import { load } from "https://esm.sh/js-yaml@4";
   import { applyTheme, loadTheme } from "../limn-engine.js";
 
-  try {
-    const r = await fetch("../config.yaml");
-    if (!r.ok) throw new Error(`config.yaml not found (HTTP ${r.status})`);
-    const config = load(await r.text());
-    const theme = await loadTheme(config.theme, "../");
-    applyTheme(theme);
-  } catch (e) {
-    console.warn("Could not load theme from config.yaml:", e.message);
-  } finally {
-    document.getElementById("app-loading").style.display = "none";
-    document.getElementById("logbook").style.display = "";
+  // ── Config ───────────────────────────────────────────────────────────
+  const DATA_URL = "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/logbook.json";
+
+  // ── Grade ordering ───────────────────────────────────────────────────
+  const GRADE_ORDER = [
+    "3","3+","4","4+","5","5+","5A","5A+","5B","5B+","5C",
+    "6A","6A+","6B","6B+","6C","6C+",
+    "7A","7A+","7B","7B+","7C","7C+",
+    "8A","8A+","8B","8B+","8C","8C+",
+    "9A","9A+"
+  ];
+  const GRADE_RANK = Object.fromEntries(GRADE_ORDER.map((g, i) => [g.toUpperCase(), i]));
+  function gradeRank(g) { return GRADE_RANK[g.toUpperCase()] ?? 99; }
+
+  function gradeColor(g) {
+    const r = gradeRank(g);
+    if (r < 5)  return "var(--grade-easy)";
+    if (r < 8)  return "var(--grade-6a)";
+    if (r < 10) return "var(--grade-6b)";
+    if (r < 12) return "var(--grade-6c)";
+    if (r < 14) return "var(--grade-7a)";
+    if (r < 16) return "var(--grade-7b)";
+    if (r < 18) return "var(--grade-7c)";
+    return "var(--grade-8a)";
   }
+
+  // ── Date helpers ─────────────────────────────────────────────────────
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function formatDate(d) {
+    if (!d) return "—";
+    const p = d.split("-");
+    if (p.length === 1) return p[0];
+    if (p.length === 2) return `${MONTHS[+p[1]-1]} ${p[0]}`;
+    return `${+p[2]} ${MONTHS[+p[1]-1]} ${p[0]}`;
+  }
+  function dateRank(d) {
+    if (!d) return -1;
+    return new Date(d).getTime();
+  }
+
+  // ── Status ───────────────────────────────────────────────────────────
+  function statusBadge(entry) {
+    if (entry.status === "send" && entry.flash)
+      return `<span class="status-badge status-flash" title="Flash">⚡ Flash</span>`;
+    if (entry.status === "send")
+      return `<span class="status-badge status-send" title="Send">✅ Send</span>`;
+    if (entry.status === "project")
+      return `<span class="status-badge status-project" title="Project">🔥 Project</span>`;
+    if (entry.status === "abandoned")
+      return `<span class="status-badge status-abandoned" title="Abandoned">✗ Abandoned</span>`;
+    return `<span class="status-badge status-wishlist" title="Wishlist">⭐ Wishlist</span>`;
+  }
+
+  // ── State ────────────────────────────────────────────────────────────
+  const state = {
+    statusFilter: "all",
+    typeFilter: "all",
+    search: "",
+    sortByPlace: {},  // { placeName: { col: "grade", dir: "asc" } }
+    collapsed: new Set(),
+  };
+
+  function getSort(place) {
+    return state.sortByPlace[place] ?? { col: "grade", dir: "asc" };
+  }
+
+  // ── Data ─────────────────────────────────────────────────────────────
+  let ALL_ENTRIES = [];
+
+  function filteredEntries() {
+    const q = state.search.toLowerCase();
+    return ALL_ENTRIES.filter(e => {
+      if (state.statusFilter !== "all") {
+        if (state.statusFilter === "flash" && !(e.status === "send" && e.flash)) return false;
+        if (state.statusFilter !== "flash" && e.status !== state.statusFilter) return false;
+      }
+      if (state.typeFilter !== "all" && e.type !== state.typeFilter) return false;
+      if (q && !e.name.toLowerCase().includes(q) && !(e.area||"").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  function groupByPlace(entries) {
+    const map = new Map();
+    for (const e of entries) {
+      if (!map.has(e.place)) map.set(e.place, []);
+      map.get(e.place).push(e);
+    }
+    // Preserve order from original data
+    const placeOrder = [...new Set(ALL_ENTRIES.map(e => e.place))];
+    return placeOrder
+      .filter(p => map.has(p))
+      .map(p => [p, map.get(p)]);
+  }
+
+  function sortEntries(entries, place) {
+    const { col, dir } = getSort(place);
+    const m = dir === "asc" ? 1 : -1;
+    return [...entries].sort((a, b) => {
+      if (col === "grade")  return m * (gradeRank(a.grade) - gradeRank(b.grade));
+      if (col === "date")   return m * (dateRank(a.date) - dateRank(b.date));
+      if (col === "name")   return m * a.name.localeCompare(b.name);
+      return 0;
+    });
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────
+  function renderStats(entries) {
+    const all    = ALL_ENTRIES.length;
+    const sends  = ALL_ENTRIES.filter(e => e.status === "send" && !e.flash).length;
+    const flashes= ALL_ENTRIES.filter(e => e.status === "send" && e.flash).length;
+    const proj   = ALL_ENTRIES.filter(e => e.status === "project").length;
+    const aband  = ALL_ENTRIES.filter(e => e.status === "abandoned").length;
+    const wish   = ALL_ENTRIES.filter(e => e.status === "wishlist").length;
+
+    const pills = [
+      { filter: "all",       icon: "🧗", label: "All",       count: all    },
+      { filter: "send",      icon: "✅", label: "Sends",     count: sends  },
+      { filter: "flash",     icon: "⚡", label: "Flashes",   count: flashes},
+      { filter: "project",   icon: "🔥", label: "Projects",  count: proj   },
+      { filter: "abandoned", icon: "✗",  label: "Abandoned", count: aband  },
+      { filter: "wishlist",  icon: "⭐", label: "Wishlist",  count: wish   },
+    ];
+
+    document.getElementById("stats-bar").innerHTML = pills.map(p =>
+      `<button class="stat-pill${state.statusFilter === p.filter ? " active" : ""}"
+         data-filter="${p.filter}">
+        <span>${p.icon}</span>
+        <span class="count">${p.count}</span>
+        <span class="label">${p.label}</span>
+      </button>`
+    ).join("");
+  }
+
+  function renderSections(entries) {
+    const container = document.getElementById("sections");
+    const groups = groupByPlace(entries);
+
+    if (groups.length === 0) {
+      container.innerHTML = `<div class="error-box">No problems match your filters.</div>`;
+      return;
+    }
+
+    let idx = 0;
+    container.innerHTML = groups.map(([place, items]) => {
+      idx++;
+      const sorted = sortEntries(items, place);
+      const { col, dir } = getSort(place);
+      const isCollapsed = state.collapsed.has(place);
+
+      const areaSet = [...new Set(items.map(e => e.area))];
+      const sendCount = items.filter(e => e.status === "send").length;
+
+      const thClass = (c) => {
+        if (c !== col) return `sortable`;
+        return `sortable sort-${dir}`;
+      };
+
+      const rows = sorted.map(e => `
+        <tr>
+          <td>${statusBadge(e)}</td>
+          <td>
+            <span style="font-weight:500">${e.name}</span>
+            ${e.notes ? `<span class="notes-icon" title="${e.notes.replace(/"/g,'&quot;')}">  ℹ</span>` : ""}
+          </td>
+          <td class="area-tag">${e.area}</td>
+          <td>
+            <span class="grade-badge" style="color:${gradeColor(e.grade)}">${e.grade}</span>
+          </td>
+          <td><span class="type-chip">${e.type}</span></td>
+          <td style="color:var(--color-text-muted);font-size:.82rem">${formatDate(e.date)}</td>
+          <td>${e.video ? `<a class="video-link" href="${e.video}" target="_blank" rel="noopener">▶ Watch</a>` : ""}</td>
+        </tr>
+      `).join("");
+
+      return `
+        <div class="place-section${isCollapsed ? " collapsed" : ""}" data-place="${place}">
+          <div class="place-header" data-place="${place}">
+            <span class="place-num">${String(idx).padStart(2,"0")}</span>
+            <span class="place-name">${place}</span>
+            <span class="place-meta">
+              <span>${items.length} problems</span>
+              ${sendCount > 0 ? `<span>✅ ${sendCount} sent</span>` : ""}
+              <span>${areaSet.join(" · ")}</span>
+            </span>
+            <span class="place-chevron">▾</span>
+          </div>
+          <div class="place-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th class="${thClass("name")}" data-sort="name" data-place="${place}">
+                    Name <i class="sort-icon"></i>
+                  </th>
+                  <th>Area</th>
+                  <th class="${thClass("grade")}" data-sort="grade" data-place="${place}">
+                    Grade <i class="sort-icon"></i>
+                  </th>
+                  <th>Type</th>
+                  <th class="${thClass("date")}" data-sort="date" data-place="${place}">
+                    Date <i class="sort-icon"></i>
+                  </th>
+                  <th>Video</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows || `<tr class="empty-row"><td colspan="7">No problems match.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  function render() {
+    const entries = filteredEntries();
+    renderStats(ALL_ENTRIES);
+    renderSections(entries);
+    updateSubtitle(entries);
+  }
+
+  function updateSubtitle(entries) {
+    const sends  = ALL_ENTRIES.filter(e => e.status === "send").length;
+    const places = new Set(ALL_ENTRIES.map(e => e.place)).size;
+    document.getElementById("subtitle").textContent =
+      `${ALL_ENTRIES.length} problems · ${sends} sent · ${places} destinations`;
+    document.getElementById("footer").textContent =
+      `logbook.json · Raiven · ${new Date().getFullYear()}`;
+  }
+
+  // ── Event delegation ─────────────────────────────────────────────────
+  document.addEventListener("click", e => {
+    // Status filter pills
+    const pill = e.target.closest(".stat-pill");
+    if (pill) {
+      state.statusFilter = pill.dataset.filter;
+      render();
+      return;
+    }
+
+    // Type toggle
+    const typeBtn = e.target.closest(".type-btn");
+    if (typeBtn) {
+      state.typeFilter = typeBtn.dataset.type;
+      document.querySelectorAll(".type-btn").forEach(b =>
+        b.classList.toggle("active", b.dataset.type === state.typeFilter));
+      render();
+      return;
+    }
+
+    // Sort header
+    const sortTh = e.target.closest("th[data-sort]");
+    if (sortTh) {
+      const place = sortTh.dataset.place;
+      const col   = sortTh.dataset.sort;
+      const cur   = getSort(place);
+      const dir   = cur.col === col && cur.dir === "asc" ? "desc" : "asc";
+      state.sortByPlace[place] = { col, dir };
+      render();
+      return;
+    }
+
+    // Collapse toggle
+    const header = e.target.closest(".place-header");
+    if (header) {
+      const place = header.dataset.place;
+      if (state.collapsed.has(place)) state.collapsed.delete(place);
+      else state.collapsed.add(place);
+      render();
+      return;
+    }
+  });
+
+  document.getElementById("search").addEventListener("input", e => {
+    state.search = e.target.value;
+    render();
+  });
+
+  // ── Boot ─────────────────────────────────────────────────────────────
+  async function boot() {
+    // Apply theme first (silent fail → page still works)
+    try {
+      const cfgRes = await fetch("../config.yaml");
+      if (cfgRes.ok) {
+        const config = load(await cfgRes.text());
+        const theme  = await loadTheme(config.theme, "../");
+        applyTheme(theme);
+      }
+    } catch { /* theme load failed — proceed with defaults */ }
+
+    // Load data
+    try {
+      const res = await fetch(DATA_URL + "?nocache=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      ALL_ENTRIES = data.entries ?? [];
+    } catch (err) {
+      document.getElementById("loading").innerHTML =
+        `<div class="error-box"><strong>Failed to load logbook data</strong><br>${err.message}</div>`;
+      return;
+    }
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "";
+    render();
+  }
+
+  boot();
 </script>
 </body>
 </html>

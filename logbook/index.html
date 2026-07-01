@@ -307,10 +307,10 @@
     if (entry.status === "send")
       return `<span class="status-icon" title="Send">✅</span>`;
     if (entry.status === "project")
-      return `<span class="status-icon" title="Project">🔥</span>`;
+      return `<span class="status-icon" title="Project">🌶️</span>`;
     if (entry.status === "abandoned")
       return `<span class="status-icon" title="Abandoned">❌</span>`;
-    return `<span class="status-icon" title="Wishlist">⭐</span>`;
+    return `<span class="status-icon" title="Wishlist">👀</span>`;
   }
 
   // ── State ────────────────────────────────────────────────────────────
@@ -379,9 +379,9 @@
       { filter: "all",       icon: "🧗", label: "All",       count: all    },
       { filter: "send",      icon: "✅", label: "Sends",     count: sends  },
       { filter: "flash",     icon: "⚡", label: "Flashes",   count: flashes},
-      { filter: "project",   icon: "🔥", label: "Projects",  count: proj   },
+      { filter: "project",   icon: "🌶️", label: "Projects",  count: proj   },
       { filter: "abandoned", icon: "✗",  label: "Abandoned", count: aband  },
-      { filter: "wishlist",  icon: "⭐", label: "Wishlist",  count: wish   },
+      { filter: "wishlist",  icon: "👀", label: "Wishlist",  count: wish   },
     ];
 
     document.getElementById("stats-bar").innerHTML = pills.map(p =>

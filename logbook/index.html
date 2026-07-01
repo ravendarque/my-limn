@@ -160,7 +160,9 @@
     }
 
     /* ── Status icon ─────────────────────────────────────────────── */
-    .status-icon { font-size: 1rem; cursor: default; line-height: 1; }
+    .status-icon { display: inline-flex; cursor: default; }
+    .status-icon svg { width: 1.4rem; height: 1.4rem; }
+    .stat-pill svg { width: 1.3rem; height: 1.3rem; display: block; }
 
     /* ── Type text ───────────────────────────────────────────────── */
     .type-text { font-size: .82rem; color: var(--color-text-muted); }
@@ -241,6 +243,7 @@
 <script type="module">
   import { load } from "https://esm.sh/js-yaml@4";
   import { applyTheme, loadTheme } from "../limn-engine.js";
+  import { STATUS_ICONS } from "./status-icons.js";
 
   // ── Config ───────────────────────────────────────────────────────────
   const DATA_URL = "/api/logbook";
@@ -304,14 +307,14 @@
   // ── Status ───────────────────────────────────────────────────────────
   function statusBadge(entry) {
     if (entry.status === "send" && entry.flash)
-      return `<span class="status-icon" title="Flash">⚡</span>`;
+      return `<span class="status-icon" title="Flash">${STATUS_ICONS.flash}</span>`;
     if (entry.status === "send")
-      return `<span class="status-icon" title="Send">✅</span>`;
+      return `<span class="status-icon" title="Send">${STATUS_ICONS.send}</span>`;
     if (entry.status === "project")
-      return `<span class="status-icon" title="Project">🌶️</span>`;
+      return `<span class="status-icon" title="Project">${STATUS_ICONS.project}</span>`;
     if (entry.status === "abandoned")
-      return `<span class="status-icon" title="Abandoned">❌</span>`;
-    return `<span class="status-icon" title="Wishlist">👀</span>`;
+      return `<span class="status-icon" title="Abandoned">${STATUS_ICONS.abandoned}</span>`;
+    return `<span class="status-icon" title="Wishlist">${STATUS_ICONS.wishlist}</span>`;
   }
 
   // ── State ────────────────────────────────────────────────────────────
@@ -377,12 +380,12 @@
     const wish   = ALL_ENTRIES.filter(e => e.status === "wishlist").length;
 
     const pills = [
-      { filter: "all",       icon: "🧗", label: "All",       count: all    },
-      { filter: "send",      icon: "✅", label: "Sends",     count: sends  },
-      { filter: "flash",     icon: "⚡", label: "Flashes",   count: flashes},
-      { filter: "project",   icon: "🌶️", label: "Projects",  count: proj   },
-      { filter: "abandoned", icon: "✗",  label: "Abandoned", count: aband  },
-      { filter: "wishlist",  icon: "👀", label: "Wishlist",  count: wish   },
+      { filter: "all",       icon: "🧗",                  label: "All",       count: all    },
+      { filter: "send",      icon: STATUS_ICONS.send,      label: "Sends",     count: sends  },
+      { filter: "flash",     icon: STATUS_ICONS.flash,     label: "Flashes",   count: flashes},
+      { filter: "project",   icon: STATUS_ICONS.project,   label: "Projects",  count: proj   },
+      { filter: "abandoned", icon: STATUS_ICONS.abandoned, label: "Abandoned", count: aband  },
+      { filter: "wishlist",  icon: STATUS_ICONS.wishlist,  label: "Wishlist",  count: wish   },
     ];
 
     document.getElementById("stats-bar").innerHTML = pills.map(p =>

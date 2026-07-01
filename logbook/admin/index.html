@@ -16,6 +16,7 @@
       --grade-7c:   #f87171;
       --grade-8a:   #c084fc;
       --r: 8px;
+      --field-h: 2.25rem;
     }
     body[data-corners="sharp"] { --r: 0px; }
 
@@ -61,8 +62,8 @@
 
     /* ── Text inputs ───────────────────────────────────────────────────── */
     .field { margin-bottom: .75rem; }
-    .row { display: flex; gap: .6rem; }
-    .row .field { flex: 1; min-width: 0; }
+    .row { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: .75rem; }
+    .row .field { flex: 1; min-width: 0; margin-bottom: 0; }
 
     input[type="text"], input[type="url"] {
       width: 100%; box-sizing: border-box;
@@ -98,12 +99,13 @@
     }
     .toggle-btn {
       flex: 1 0 auto;
+      box-sizing: border-box;
       border: none;
       border-right: 1px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-muted);
-      font-size: .85rem; font-weight: 600;
-      padding: .55rem .7rem;
+      font-size: .78rem; font-weight: 600;
+      padding: .5rem .6rem;
       cursor: pointer;
       white-space: nowrap;
       transition: background .12s, color .12s;
@@ -116,58 +118,69 @@
     }
 
     /* ── Type toggle: equal-width buttons ────────────────────────────────── */
+    #type-group {
+      flex: 1 1 9rem;
+      min-width: 0;
+      height: var(--field-h);
+      margin-bottom: 0;
+    }
     #type-group .toggle-btn {
       flex: 1 1 0;
-      min-width: 4.5rem;
+      min-width: 4rem;
+      height: 100%;
+      display: flex; align-items: center; justify-content: center;
       text-align: center;
     }
 
-    /* ── Status toggle: square icon-over-label buttons, equal width ──────── */
-    #status-group { flex-wrap: nowrap; }
+    /* ── Status toggle: compact icon-over-label buttons, equal width, hugs content ── */
+    #status-group { display: inline-flex; flex-wrap: nowrap; width: auto; }
     #status-group .toggle-btn {
-      flex: 1 1 0;
-      aspect-ratio: 1;
+      flex: 0 0 auto;
+      min-width: 4.5rem;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: .3rem;
-      padding: .5rem .2rem;
+      gap: .15rem;
+      padding: .45rem .3rem;
     }
-    .status-icon { font-size: 1.5rem; line-height: 1; }
+    .status-icon { display: flex; }
+    .status-icon svg { width: 1.5rem; height: 1.5rem; }
     .status-label {
-      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      font-size: .58rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: .03em;
     }
 
     /* ── Grade picker ──────────────────────────────────────────────────── */
-    .grade-row {
-      display: flex; align-items: stretch; gap: .6rem; margin-bottom: .75rem;
-    }
     .grade-picker {
+      flex: 1 1 9rem;
+      min-width: 0;
+      height: var(--field-h);
       display: flex; align-items: stretch; gap: .5rem;
     }
     .grade-step {
-      flex: 0 0 2.75rem;
+      flex: 0 0 var(--field-h);
+      box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--color-border);
       border-radius: var(--r);
       background: var(--color-surface);
       color: var(--color-text);
-      font-size: 1.3rem; line-height: 1;
       cursor: pointer;
     }
+    .grade-step svg { width: .8rem; height: .8rem; fill: currentColor; }
     .grade-step:hover { border-color: var(--color-accent); }
     .grade-step:active { transform: scale(.94); }
 
-    #type-group { margin-bottom: 0; }
-
     #grade-select {
       box-sizing: border-box;
-      width: 6.5rem;
+      flex: 1;
+      min-width: 0;
+      height: var(--field-h);
       border: 1px solid currentColor;
       border-radius: var(--r);
       background: color-mix(in srgb, currentColor 25%, var(--color-surface));
       color: var(--color-text);
-      font-size: 1.1rem; font-weight: 700; font-family: monospace;
+      font-size: .85rem; font-weight: 700; font-family: monospace;
       text-align: center; text-align-last: center;
-      padding: .55rem .5rem;
+      padding: 0 .4rem;
       outline: none;
       appearance: none;
       -webkit-appearance: none;
@@ -177,7 +190,25 @@
       background: var(--color-surface); color: var(--color-text);
     }
 
-    /* ── Date input hint ───────────────────────────────────────────────── */
+    /* ── Date input ────────────────────────────────────────────────────── */
+    .date-row { display: flex; align-items: stretch; gap: .5rem; }
+    #date { width: 8.5rem; flex: 0 0 auto; }
+    .date-picker-btn {
+      flex: 0 0 2.75rem;
+      box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .date-picker-btn svg { width: 1.1rem; height: 1.1rem; stroke: currentColor; }
+    .date-picker-btn:hover { border-color: var(--color-accent); }
+    .date-native {
+      position: absolute; width: 1px; height: 1px;
+      opacity: 0; pointer-events: none;
+    }
     .date-hint { font-size: .75rem; color: var(--color-text-muted); margin-top: .3rem; }
 
     /* ── Submit ────────────────────────────────────────────────────────── */
@@ -237,11 +268,15 @@
     </div>
 
     <div class="section-label">Grade</div>
-    <div class="grade-row">
+    <div class="row">
       <div class="grade-picker">
-        <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">‹</button>
+        <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">
+          <svg viewBox="0 0 24 24"><polygon points="16 5 6 12 16 19"></polygon></svg>
+        </button>
         <select id="grade-select"></select>
-        <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">›</button>
+        <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">
+          <svg viewBox="0 0 24 24"><polygon points="8 5 18 12 8 19"></polygon></svg>
+        </button>
       </div>
       <div class="toggle-bar" id="type-group">
         <button type="button" class="toggle-btn active" data-value="boulder">Boulder</button>
@@ -252,25 +287,36 @@
     <div class="section-label">Status</div>
     <div class="toggle-bar" id="status-group">
       <button type="button" class="toggle-btn" data-value="flash">
-        <span class="status-icon">⚡</span><span class="status-label">Flash</span>
+        <span class="status-icon" data-icon="flash"></span><span class="status-label">Flash</span>
       </button>
       <button type="button" class="toggle-btn active" data-value="send">
-        <span class="status-icon">✅</span><span class="status-label">Send</span>
+        <span class="status-icon" data-icon="send"></span><span class="status-label">Send</span>
       </button>
       <button type="button" class="toggle-btn" data-value="project">
-        <span class="status-icon">🌶️</span><span class="status-label">Project</span>
+        <span class="status-icon" data-icon="project"></span><span class="status-label">Project</span>
       </button>
       <button type="button" class="toggle-btn" data-value="wishlist">
-        <span class="status-icon">👀</span><span class="status-label">Wishlist</span>
+        <span class="status-icon" data-icon="wishlist"></span><span class="status-label">Wishlist</span>
       </button>
       <button type="button" class="toggle-btn" data-value="abandoned">
-        <span class="status-icon">❌</span><span class="status-label">Abandoned</span>
+        <span class="status-icon" data-icon="abandoned"></span><span class="status-label">Abandoned</span>
       </button>
     </div>
 
     <div class="section-label">When</div>
     <div class="field">
-      <input type="text" id="date">
+      <div class="date-row">
+        <input type="text" id="date">
+        <button type="button" class="date-picker-btn" id="date-picker-btn" aria-label="Pick a date">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <line x1="8" y1="3" x2="8" y2="7"></line>
+            <line x1="16" y1="3" x2="16" y2="7"></line>
+          </svg>
+        </button>
+        <input type="date" id="date-native" class="date-native" tabindex="-1" aria-hidden="true">
+      </div>
       <div class="date-hint">YYYY-MM or YYYY-MM-DD</div>
     </div>
 
@@ -291,6 +337,7 @@
   <script type="module">
     import { applyTheme, loadTheme } from "../../limn-engine.js";
     import { load } from "https://esm.sh/js-yaml@4";
+    import { STATUS_ICONS } from "../status-icons.js";
 
     // ── Theme ─────────────────────────────────────────────────────────────
     try {
@@ -301,6 +348,11 @@
         applyTheme(theme);
       }
     } catch {}
+
+    // ── Status icons ─────────────────────────────────────────────────────
+    document.querySelectorAll("#status-group .status-icon[data-icon]").forEach(el => {
+      el.innerHTML = STATUS_ICONS[el.dataset.icon];
+    });
 
     // ── Grade data ────────────────────────────────────────────────────────
     const BOULDER_GRADES = [
@@ -357,6 +409,8 @@
     const gradePrev   = document.getElementById("grade-prev");
     const gradeNext   = document.getElementById("grade-next");
     const dateInput  = document.getElementById("date");
+    const dateNative = document.getElementById("date-native");
+    const datePickerBtn = document.getElementById("date-picker-btn");
     const submitBtn  = document.getElementById("submit-btn");
     const msgEl      = document.getElementById("msg");
 
@@ -367,6 +421,21 @@
 
     // ── Default date ──────────────────────────────────────────────────────
     dateInput.value = new Date().toISOString().slice(0, 10);
+
+    // ── Native date picker (feeds the flexible text field) ────────────────
+    datePickerBtn.addEventListener("click", () => {
+      const current = dateInput.value.trim();
+      dateNative.value = /^\d{4}-\d{2}-\d{2}$/.test(current)
+        ? current
+        : /^\d{4}-\d{2}$/.test(current)
+          ? `${current}-01`
+          : new Date().toISOString().slice(0, 10);
+      if (dateNative.showPicker) dateNative.showPicker();
+      else dateNative.focus();
+    });
+    dateNative.addEventListener("change", () => {
+      if (dateNative.value) dateInput.value = dateNative.value;
+    });
 
     // ── Load logbook for place/area suggestions ───────────────────────────
     try {
@@ -386,13 +455,17 @@
 
     function populateAreas(place) {
       const areas = [...new Set(
-        logbookData.filter(e => e.place === place && e.area).map(e => e.area)
+        logbookData
+          .filter(e => (!place || e.place === place) && e.area)
+          .map(e => e.area)
       )].sort();
       const dl = document.getElementById("areas-list");
       dl.innerHTML = areas.map(a => `<option value="${a}">`).join("");
     }
 
     placeInput.addEventListener("input", () => populateAreas(placeInput.value.trim()));
+    areaInput.addEventListener("focus", () => populateAreas(placeInput.value.trim()));
+    areaInput.addEventListener("input", () => populateAreas(placeInput.value.trim()));
 
     // ── Type toggle ───────────────────────────────────────────────────────
     document.getElementById("type-group").addEventListener("click", e => {

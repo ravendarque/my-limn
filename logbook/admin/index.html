@@ -6,159 +6,226 @@
   <title>Logbook Admin</title>
   <link rel="stylesheet" href="../../limn-engine.css">
   <style>
+    :root {
+      --grade-easy: #94a3b8;
+      --grade-6a:   #22d3ee;
+      --grade-6b:   #4ade80;
+      --grade-6c:   #a3e635;
+      --grade-7a:   #facc15;
+      --grade-7b:   #fb923c;
+      --grade-7c:   #f87171;
+      --grade-8a:   #c084fc;
+      --r: 8px;
+    }
+    body[data-corners="sharp"] { --r: 0px; }
+
     body {
       background: var(--color-bg); color: var(--color-text);
-      padding: 1.5rem 1rem 4rem; max-width: 560px; margin: 0 auto;
+      padding: 1.25rem 1rem 5rem; max-width: 520px; margin: 0 auto;
+      font-family: inherit;
     }
-    h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-accent); margin-bottom: .25rem; }
-    .subtitle { color: var(--color-text-muted); font-size: .9rem; margin-bottom: 1.75rem; }
 
     a.back-link {
       display: inline-flex; align-items: center; gap: .4rem;
       color: var(--color-accent); text-decoration: none;
-      font-size: .9rem; margin-bottom: 1.25rem;
+      font-size: .9rem; margin-bottom: 1.25rem; display: block;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; color: var(--color-accent); margin-bottom: 1.5rem; }
+
+    /* ── Key bar ───────────────────────────────────────────────────────── */
+    .key-bar {
+      display: flex; align-items: center; gap: .6rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .55rem .85rem;
+      margin-bottom: 1.5rem;
+    }
+    .key-bar label { font-size: .8rem; color: var(--color-text-muted); white-space: nowrap; margin: 0; }
+    .key-bar input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--color-text); font-family: monospace; font-size: .95rem;
+      min-width: 0;
     }
 
-    .field { margin-bottom: 1rem; }
-    label { display: block; font-size: .82rem; color: var(--color-text-muted); margin-bottom: .3rem; font-weight: 500; }
-    input, select, textarea {
+    /* ── Section labels ────────────────────────────────────────────────── */
+    .section-label {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--color-text-muted);
+      margin: 1.25rem 0 .5rem;
+    }
+
+    /* ── Text inputs ───────────────────────────────────────────────────── */
+    .field { margin-bottom: .75rem; }
+    .row { display: flex; gap: .6rem; }
+    .row .field { flex: 1; min-width: 0; }
+
+    input[type="text"], input[type="url"] {
       width: 100%; box-sizing: border-box;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: .6rem .85rem;
+      border-radius: var(--r);
+      padding: .65rem .85rem;
       color: var(--color-text);
-      font-size: 1rem;
+      font-size: 1rem; font-family: inherit;
       outline: none;
-      font-family: inherit;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--color-accent); }
-    textarea { resize: vertical; min-height: 80px; }
+    input[type="text"]:focus, input[type="url"]:focus { border-color: var(--color-accent); }
 
-    .row { display: flex; gap: .75rem; }
-    .row .field { flex: 1; }
-
-    .checkbox-field {
-      display: flex; align-items: center; gap: .6rem;
-      margin-bottom: 1rem;
-    }
-    .checkbox-field input { width: auto; }
-    .checkbox-field label { margin: 0; font-size: 1rem; color: var(--color-text); }
-
-    #flash-row { display: none; }
-    #flash-row.visible { display: flex; }
-
-    .key-section {
+    textarea {
+      width: 100%; box-sizing: border-box;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: .85rem;
-      margin-bottom: 1.5rem;
-      display: flex; align-items: center; gap: .75rem;
+      border-radius: var(--r);
+      padding: .65rem .85rem;
+      color: var(--color-text);
+      font-size: 1rem; font-family: inherit;
+      outline: none; resize: vertical; min-height: 72px;
     }
-    .key-section label { margin: 0; white-space: nowrap; color: var(--color-text-muted); font-size: .82rem; }
-    .key-section input { flex: 1; font-family: monospace; }
+    textarea:focus { border-color: var(--color-accent); }
 
-    button[type="submit"] {
-      width: 100%;
+    /* ── Pill toggles (type, status, flash) ────────────────────────────── */
+    .pill-group {
+      display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem;
+    }
+    .pill {
+      padding: .5rem .9rem;
+      border: 1px solid var(--color-border);
+      border-radius: calc(var(--r) * 3);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      font-size: .9rem; cursor: pointer;
+      transition: border-color .12s, background .12s, color .12s;
+      user-select: none; white-space: nowrap;
+    }
+    .pill:hover { border-color: var(--color-accent); color: var(--color-text); }
+    .pill.active {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-accent-text);
+      font-weight: 600;
+    }
+
+    /* ── Grade grid ────────────────────────────────────────────────────── */
+    .grade-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+      gap: .35rem;
+      margin-bottom: .75rem;
+    }
+    .grade-btn {
+      padding: .55rem .2rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      background: color-mix(in srgb, currentColor 10%, var(--color-surface));
+      font-size: .85rem; font-weight: 700; font-family: monospace;
+      cursor: pointer; text-align: center;
+      transition: transform .08s, box-shadow .08s;
+    }
+    .grade-btn:active { transform: scale(.94); }
+    .grade-btn.selected {
+      border-color: currentColor;
+      background: color-mix(in srgb, currentColor 25%, var(--color-surface));
+      box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 40%, transparent);
+    }
+
+    /* ── Date input hint ───────────────────────────────────────────────── */
+    .date-hint { font-size: .75rem; color: var(--color-text-muted); margin-top: .3rem; }
+
+    /* ── Submit ────────────────────────────────────────────────────────── */
+    .submit-btn {
+      width: 100%; margin-top: 1.25rem;
       background: var(--color-accent); color: var(--color-accent-text);
-      border: none; border-radius: 8px;
-      padding: .85rem;
-      font-size: 1rem; font-weight: 600;
+      border: none; border-radius: var(--r);
+      padding: .9rem; font-size: 1rem; font-weight: 700;
       cursor: pointer;
-      margin-top: .5rem;
     }
-    button[type="submit"]:disabled { opacity: .5; cursor: not-allowed; }
+    .submit-btn:disabled { opacity: .45; cursor: not-allowed; }
 
+    /* ── Message ───────────────────────────────────────────────────────── */
     .msg {
-      margin-top: 1rem; padding: .75rem 1rem;
-      border-radius: 8px; font-size: .9rem; display: none;
+      margin-top: .85rem; padding: .75rem 1rem;
+      border-radius: var(--r); font-size: .9rem; display: none;
     }
     .msg.success {
       background: color-mix(in srgb, #4ade80 12%, var(--color-surface));
       border: 1px solid color-mix(in srgb, #4ade80 40%, transparent);
-      color: var(--color-text); display: block;
+      display: block;
     }
     .msg.error {
       background: color-mix(in srgb, #f87171 12%, var(--color-surface));
       border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
-      color: var(--color-text); display: block;
+      display: block;
     }
   </style>
 </head>
 <body>
   <a href="/logbook" class="back-link">← Logbook</a>
-  <h1>Add Entry</h1>
-  <p class="subtitle">New send, project, or wishlist item.</p>
+  <h1>Add entry</h1>
 
-  <div class="key-section">
-    <label for="admin-key">Admin key</label>
-    <input type="password" id="admin-key" autocomplete="current-password" placeholder="••••••••">
+  <div class="key-bar">
+    <label for="admin-key">Key</label>
+    <input type="password" id="admin-key" autocomplete="current-password">
   </div>
 
   <form id="entry-form" autocomplete="off">
+
+    <div class="section-label">Location</div>
     <div class="row">
       <div class="field">
-        <label for="place">Place *</label>
-        <input type="text" id="place" required placeholder="Magic Wood">
+        <input type="text" id="place" list="places-list" required>
+        <datalist id="places-list"></datalist>
       </div>
       <div class="field">
-        <label for="area">Sector</label>
-        <input type="text" id="area" placeholder="Mitte">
+        <input type="text" id="area" list="areas-list">
+        <datalist id="areas-list"></datalist>
       </div>
     </div>
 
+    <div class="section-label">Problem</div>
     <div class="field">
-      <label for="name">Problem / Route name *</label>
-      <input type="text" id="name" required placeholder="Conan">
+      <input type="text" id="name" required>
     </div>
 
-    <div class="row">
-      <div class="field">
-        <label for="grade">Grade *</label>
-        <input type="text" id="grade" required placeholder="7C+">
-      </div>
-      <div class="field">
-        <label for="type">Type *</label>
-        <select id="type" required>
-          <option value="boulder">Boulder</option>
-          <option value="lead">Lead</option>
-        </select>
-      </div>
+    <div class="section-label">Type</div>
+    <div class="pill-group" id="type-group">
+      <button type="button" class="pill active" data-value="boulder">Boulder</button>
+      <button type="button" class="pill" data-value="lead">Lead</button>
     </div>
 
-    <div class="row">
-      <div class="field">
-        <label for="status">Status *</label>
-        <select id="status" required>
-          <option value="send">Send ✅</option>
-          <option value="project">Project 🌶️</option>
-          <option value="wishlist">Wishlist 👀</option>
-          <option value="abandoned">Abandoned ❌</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="date">Date</label>
-        <input type="text" id="date" placeholder="2026-06 or 2026-06-25">
-      </div>
+    <div class="section-label">Grade</div>
+    <div class="grade-grid" id="grade-grid"></div>
+    <input type="hidden" id="grade">
+
+    <div class="section-label">Status</div>
+    <div class="pill-group" id="status-group">
+      <button type="button" class="pill active" data-value="send">✅ Send</button>
+      <button type="button" class="pill" data-value="project">🌶️ Project</button>
+      <button type="button" class="pill" data-value="wishlist">👀 Wishlist</button>
+      <button type="button" class="pill" data-value="abandoned">❌ Abandoned</button>
     </div>
 
-    <div class="checkbox-field" id="flash-row">
-      <input type="checkbox" id="flash">
-      <label for="flash">Flash ⚡</label>
+    <div class="pill-group" id="flash-group" style="display:none">
+      <button type="button" class="pill" id="flash-btn" data-value="false">⚡ Flash</button>
     </div>
 
+    <div class="section-label">When</div>
     <div class="field">
-      <label for="notes">Notes</label>
-      <textarea id="notes" placeholder="Beta, grade comments, etc."></textarea>
+      <input type="text" id="date">
+      <div class="date-hint">YYYY-MM or YYYY-MM-DD</div>
     </div>
 
+    <div class="section-label">Notes</div>
     <div class="field">
-      <label for="video">Video URL</label>
-      <input type="url" id="video" placeholder="https://…">
+      <textarea id="notes"></textarea>
     </div>
 
-    <button type="submit" id="submit-btn">Add to logbook</button>
+    <div class="section-label">Video</div>
+    <div class="field">
+      <input type="url" id="video">
+    </div>
+
+    <button type="submit" class="submit-btn" id="submit-btn">Add to logbook</button>
     <div class="msg" id="msg"></div>
   </form>
 
@@ -166,91 +233,220 @@
     import { applyTheme, loadTheme } from "../../limn-engine.js";
     import { load } from "https://esm.sh/js-yaml@4";
 
-    // Apply theme
+    // ── Theme ─────────────────────────────────────────────────────────────
     try {
-      const cfgRes = await fetch("../../config.yaml");
-      if (cfgRes.ok) {
-        const config = load(await cfgRes.text());
-        const theme  = await loadTheme(config.theme, "../../");
+      const r = await fetch("../../config.yaml");
+      if (r.ok) {
+        const cfg   = load(await r.text());
+        const theme = await loadTheme(cfg.theme, "../../");
         applyTheme(theme);
       }
     } catch {}
 
-    // Persist admin key in sessionStorage
-    const keyInput = document.getElementById("admin-key");
+    // ── Grade data ────────────────────────────────────────────────────────
+    const BOULDER_GRADES = [
+      { g: "5+",  c: "var(--grade-easy)" },
+      { g: "5A",  c: "var(--grade-easy)" },
+      { g: "5B",  c: "var(--grade-easy)" },
+      { g: "5C",  c: "var(--grade-easy)" },
+      { g: "6A",  c: "var(--grade-6a)"   },
+      { g: "6A+", c: "var(--grade-6a)"   },
+      { g: "6B",  c: "var(--grade-6b)"   },
+      { g: "6B+", c: "var(--grade-6b)"   },
+      { g: "6C",  c: "var(--grade-6c)"   },
+      { g: "6C+", c: "var(--grade-6c)"   },
+      { g: "7A",  c: "var(--grade-7a)"   },
+      { g: "7A+", c: "var(--grade-7a)"   },
+      { g: "7B",  c: "var(--grade-7b)"   },
+      { g: "7B+", c: "var(--grade-7b)"   },
+      { g: "7C",  c: "var(--grade-7c)"   },
+      { g: "7C+", c: "var(--grade-7c)"   },
+      { g: "8A",  c: "var(--grade-8a)"   },
+      { g: "8A+", c: "var(--grade-8a)"   },
+      { g: "8B",  c: "var(--grade-8a)"   },
+      { g: "8B+", c: "var(--grade-8a)"   },
+    ];
+    const LEAD_GRADES = [
+      { g: "5c",  c: "var(--grade-easy)" },
+      { g: "6a",  c: "var(--grade-6a)"   },
+      { g: "6a+", c: "var(--grade-6a)"   },
+      { g: "6b",  c: "var(--grade-6b)"   },
+      { g: "6b+", c: "var(--grade-6b)"   },
+      { g: "6c",  c: "var(--grade-6c)"   },
+      { g: "6c+", c: "var(--grade-6c)"   },
+      { g: "7a",  c: "var(--grade-7a)"   },
+      { g: "7a+", c: "var(--grade-7a)"   },
+      { g: "7b",  c: "var(--grade-7b)"   },
+      { g: "7b+", c: "var(--grade-7b)"   },
+      { g: "7c",  c: "var(--grade-7c)"   },
+      { g: "7c+", c: "var(--grade-7c)"   },
+      { g: "8a",  c: "var(--grade-8a)"   },
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────
+    let selectedType   = "boulder";
+    let selectedStatus = "send";
+    let selectedGrade  = "";
+    let isFlash        = false;
+    let logbookData    = [];
+
+    // ── DOM refs ──────────────────────────────────────────────────────────
+    const keyInput   = document.getElementById("admin-key");
+    const placeInput = document.getElementById("place");
+    const areaInput  = document.getElementById("area");
+    const gradeGrid  = document.getElementById("grade-grid");
+    const gradeHid   = document.getElementById("grade");
+    const dateInput  = document.getElementById("date");
+    const flashGroup = document.getElementById("flash-group");
+    const flashBtn   = document.getElementById("flash-btn");
+    const submitBtn  = document.getElementById("submit-btn");
+    const msgEl      = document.getElementById("msg");
+
+    // ── Admin key (sessionStorage) ────────────────────────────────────────
     keyInput.value = sessionStorage.getItem("logbook_admin_key") ?? "";
-    keyInput.addEventListener("change", () => {
-      sessionStorage.setItem("logbook_admin_key", keyInput.value);
+    keyInput.addEventListener("change", () =>
+      sessionStorage.setItem("logbook_admin_key", keyInput.value));
+
+    // ── Default date ──────────────────────────────────────────────────────
+    dateInput.value = new Date().toISOString().slice(0, 7);
+
+    // ── Load logbook for place/area suggestions ───────────────────────────
+    try {
+      const r = await fetch("/api/logbook");
+      if (r.ok) {
+        const data = await r.json();
+        logbookData = data.entries ?? [];
+        populatePlaces();
+      }
+    } catch {}
+
+    function populatePlaces() {
+      const places = [...new Set(logbookData.map(e => e.place))].sort();
+      const dl = document.getElementById("places-list");
+      dl.innerHTML = places.map(p => `<option value="${p}">`).join("");
+    }
+
+    function populateAreas(place) {
+      const areas = [...new Set(
+        logbookData.filter(e => e.place === place && e.area).map(e => e.area)
+      )].sort();
+      const dl = document.getElementById("areas-list");
+      dl.innerHTML = areas.map(a => `<option value="${a}">`).join("");
+    }
+
+    placeInput.addEventListener("input", () => populateAreas(placeInput.value.trim()));
+
+    // ── Type toggle ───────────────────────────────────────────────────────
+    document.getElementById("type-group").addEventListener("click", e => {
+      const pill = e.target.closest(".pill");
+      if (!pill) return;
+      selectedType = pill.dataset.value;
+      selectedGrade = "";
+      gradeHid.value = "";
+      document.querySelectorAll("#type-group .pill").forEach(p =>
+        p.classList.toggle("active", p === pill));
+      renderGradeGrid();
     });
 
-    // Show flash checkbox only for sends
-    const statusEl = document.getElementById("status");
-    const flashRow = document.getElementById("flash-row");
-    function updateFlashVisibility() {
-      flashRow.classList.toggle("visible", statusEl.value === "send");
+    // ── Grade grid ────────────────────────────────────────────────────────
+    function renderGradeGrid() {
+      const grades = selectedType === "boulder" ? BOULDER_GRADES : LEAD_GRADES;
+      gradeGrid.innerHTML = grades.map(({ g, c }) => `
+        <button type="button" class="grade-btn${selectedGrade === g ? " selected" : ""}"
+          data-grade="${g}" style="color:${c}">${g}</button>
+      `).join("");
     }
-    statusEl.addEventListener("change", updateFlashVisibility);
+
+    gradeGrid.addEventListener("click", e => {
+      const btn = e.target.closest(".grade-btn");
+      if (!btn) return;
+      selectedGrade = btn.dataset.grade;
+      gradeHid.value = selectedGrade;
+      document.querySelectorAll(".grade-btn").forEach(b =>
+        b.classList.toggle("selected", b === btn));
+    });
+
+    renderGradeGrid();
+
+    // ── Status toggle ─────────────────────────────────────────────────────
+    function updateFlashVisibility() {
+      flashGroup.style.display = selectedStatus === "send" ? "" : "none";
+      if (selectedStatus !== "send") { isFlash = false; syncFlashBtn(); }
+    }
+
+    document.getElementById("status-group").addEventListener("click", e => {
+      const pill = e.target.closest(".pill");
+      if (!pill) return;
+      selectedStatus = pill.dataset.value;
+      document.querySelectorAll("#status-group .pill").forEach(p =>
+        p.classList.toggle("active", p === pill));
+      updateFlashVisibility();
+    });
+
     updateFlashVisibility();
 
-    // Submit
-    const form    = document.getElementById("entry-form");
-    const btn     = document.getElementById("submit-btn");
-    const msgEl   = document.getElementById("msg");
+    // ── Flash toggle ──────────────────────────────────────────────────────
+    function syncFlashBtn() {
+      flashBtn.classList.toggle("active", isFlash);
+    }
 
-    form.addEventListener("submit", async e => {
+    flashBtn.addEventListener("click", () => {
+      isFlash = !isFlash;
+      syncFlashBtn();
+    });
+
+    // ── Submit ────────────────────────────────────────────────────────────
+    document.getElementById("entry-form").addEventListener("submit", async e => {
       e.preventDefault();
-      btn.disabled = true;
-      msgEl.className = "msg";
-      msgEl.textContent = "";
 
       const adminKey = keyInput.value.trim();
-      if (!adminKey) {
-        showMsg("Enter your admin key first.", "error");
-        btn.disabled = false;
-        return;
-      }
+      if (!adminKey) return showMsg("Enter your admin key.", "error");
+      if (!selectedGrade) return showMsg("Pick a grade.", "error");
+
+      submitBtn.disabled = true;
+      msgEl.className = "msg";
 
       const entry = {
-        place:  document.getElementById("place").value.trim(),
-        area:   document.getElementById("area").value.trim(),
+        place:  placeInput.value.trim(),
+        area:   areaInput.value.trim(),
         name:   document.getElementById("name").value.trim(),
-        grade:  document.getElementById("grade").value.trim(),
-        type:   document.getElementById("type").value,
-        status: statusEl.value,
-        flash:  document.getElementById("flash").checked,
-        date:   document.getElementById("date").value.trim() || null,
+        grade:  selectedGrade,
+        type:   selectedType,
+        status: selectedStatus,
+        flash:  isFlash,
+        date:   dateInput.value.trim() || null,
         notes:  document.getElementById("notes").value.trim() || null,
         video:  document.getElementById("video").value.trim() || null,
       };
 
       try {
-        const res = await fetch("/api/logbook", {
+        const res  = await fetch("/api/logbook", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Admin-Key": adminKey,
-          },
+          headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
           body: JSON.stringify(entry),
         });
-
         const data = await res.json();
         if (!res.ok) {
           showMsg(data.error ?? `Error ${res.status}`, "error");
         } else {
-          showMsg(`✅ "${entry.name}" added. ${data.entries.length} total entries.`, "success");
-          form.reset();
-          updateFlashVisibility();
+          showMsg(`"${entry.name}" added (${data.entries.length} total)`, "success");
+          document.getElementById("name").value    = "";
+          document.getElementById("notes").value   = "";
+          document.getElementById("video").value   = "";
+          selectedGrade = ""; gradeHid.value = "";
+          isFlash = false; syncFlashBtn();
+          renderGradeGrid();
         }
       } catch (err) {
         showMsg(`Network error: ${err.message}`, "error");
       }
 
-      btn.disabled = false;
+      submitBtn.disabled = false;
     });
 
     function showMsg(text, type) {
       msgEl.textContent = text;
-      msgEl.className = `msg ${type}`;
+      msgEl.className   = `msg ${type}`;
     }
   </script>
 </body>

@@ -109,25 +109,38 @@
       font-weight: 600;
     }
 
-    /* ── Grade grid ────────────────────────────────────────────────────── */
-    .grade-row {
-      display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .35rem;
+    /* ── Grade picker ──────────────────────────────────────────────────── */
+    .grade-picker {
+      display: flex; align-items: stretch; gap: .5rem; margin-bottom: .75rem;
     }
-    .grade-btn {
-      flex: 1 1 3.2rem; min-width: 3.2rem;
-      padding: .55rem .2rem;
+    .grade-step {
+      flex: 0 0 2.75rem;
       border: 1px solid var(--color-border);
       border-radius: var(--r);
-      background: color-mix(in srgb, currentColor 10%, var(--color-surface));
-      font-size: .85rem; font-weight: 700; font-family: monospace;
-      cursor: pointer; text-align: center;
-      transition: transform .08s, box-shadow .08s;
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: 1.3rem; line-height: 1;
+      cursor: pointer;
     }
-    .grade-btn:active { transform: scale(.94); }
-    .grade-btn.selected {
-      border-color: currentColor;
+    .grade-step:hover { border-color: var(--color-accent); }
+    .grade-step:active { transform: scale(.94); }
+
+    #grade-select {
+      flex: 1; min-width: 0;
+      border: 1px solid currentColor;
+      border-radius: var(--r);
       background: color-mix(in srgb, currentColor 25%, var(--color-surface));
-      box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 40%, transparent);
+      color: var(--color-text);
+      font-size: 1.1rem; font-weight: 700; font-family: monospace;
+      text-align: center; text-align-last: center;
+      padding: .55rem .5rem;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    #grade-select option {
+      font-family: monospace; font-weight: 700;
+      background: var(--color-surface); color: var(--color-text);
     }
 
     /* ── Date input hint ───────────────────────────────────────────────── */
@@ -182,23 +195,25 @@
       <input type="text" id="name" required>
     </div>
 
-    <div class="section-label">Location</div>
     <div class="row">
       <div class="field">
-        <div class="sub-label">Place</div>
+        <div class="sub-label">Location</div>
         <input type="text" id="place" list="places-list" required>
         <datalist id="places-list"></datalist>
       </div>
       <div class="field">
-        <div class="sub-label">Sector</div>
+        <div class="sub-label">Area</div>
         <input type="text" id="area" list="areas-list">
         <datalist id="areas-list"></datalist>
       </div>
     </div>
 
     <div class="section-label">Grade</div>
-    <div id="grade-grid"></div>
-    <input type="hidden" id="grade">
+    <div class="grade-picker">
+      <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">‹</button>
+      <select id="grade-select"></select>
+      <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">›</button>
+    </div>
 
     <div class="section-label">Status</div>
     <div class="pill-group" id="status-group">
@@ -283,17 +298,6 @@
       { g: "8a",  c: "var(--grade-8a)"   },
     ];
 
-    // Groups grades by their leading digit (5, 6, 7, 8) so each number gets its own row.
-    function groupByNumber(grades) {
-      const groups = new Map();
-      for (const grade of grades) {
-        const num = grade.g[0];
-        if (!groups.has(num)) groups.set(num, []);
-        groups.get(num).push(grade);
-      }
-      return [...groups.values()];
-    }
-
     // ── State ─────────────────────────────────────────────────────────────
     let selectedType   = "boulder";
     let selectedStatus = "send";
@@ -305,8 +309,9 @@
     const keyInput   = document.getElementById("admin-key");
     const placeInput = document.getElementById("place");
     const areaInput  = document.getElementById("area");
-    const gradeGrid  = document.getElementById("grade-grid");
-    const gradeHid   = document.getElementById("grade");
+    const gradeSelect = document.getElementById("grade-select");
+    const gradePrev   = document.getElementById("grade-prev");
+    const gradeNext   = document.getElementById("grade-next");
     const dateInput  = document.getElementById("date");
     const submitBtn  = document.getElementById("submit-btn");
     const msgEl      = document.getElementById("msg");
@@ -350,37 +355,45 @@
       const pill = e.target.closest(".pill");
       if (!pill) return;
       selectedType = pill.dataset.value;
-      selectedGrade = "";
-      gradeHid.value = "";
       document.querySelectorAll("#type-group .pill").forEach(p =>
         p.classList.toggle("active", p === pill));
-      renderGradeGrid();
+      renderGradeOptions();
+      selectGradeByIndex(0);
     });
 
-    // ── Grade grid ────────────────────────────────────────────────────────
-    function renderGradeGrid() {
-      const grades = selectedType === "boulder" ? BOULDER_GRADES : LEAD_GRADES;
-      const rows = groupByNumber(grades);
-      gradeGrid.innerHTML = rows.map(row => `
-        <div class="grade-row">
-          ${row.map(({ g, c }) => `
-            <button type="button" class="grade-btn${selectedGrade === g ? " selected" : ""}"
-              data-grade="${g}" style="color:${c}">${g}</button>
-          `).join("")}
-        </div>
-      `).join("");
+    // ── Grade picker (dropdown + prev/next) ────────────────────────────────
+    function currentGrades() {
+      return selectedType === "boulder" ? BOULDER_GRADES : LEAD_GRADES;
     }
 
-    gradeGrid.addEventListener("click", e => {
-      const btn = e.target.closest(".grade-btn");
-      if (!btn) return;
-      selectedGrade = btn.dataset.grade;
-      gradeHid.value = selectedGrade;
-      document.querySelectorAll(".grade-btn").forEach(b =>
-        b.classList.toggle("selected", b === btn));
-    });
+    function renderGradeOptions() {
+      gradeSelect.innerHTML = currentGrades()
+        .map(({ g }) => `<option value="${g}">${g}</option>`)
+        .join("");
+    }
 
-    renderGradeGrid();
+    function selectGradeByIndex(index) {
+      const grades = currentGrades();
+      const wrapped = ((index % grades.length) + grades.length) % grades.length;
+      const { g, c } = grades[wrapped];
+      selectedGrade = g;
+      gradeSelect.value = g;
+      gradeSelect.style.color = c;
+    }
+
+    function currentGradeIndex() {
+      const idx = currentGrades().findIndex(({ g }) => g === selectedGrade);
+      return idx === -1 ? 0 : idx;
+    }
+
+    renderGradeOptions();
+    selectGradeByIndex(0);
+
+    gradeSelect.addEventListener("change", () => selectGradeByIndex(
+      currentGrades().findIndex(({ g }) => g === gradeSelect.value)
+    ));
+    gradePrev.addEventListener("click", () => selectGradeByIndex(currentGradeIndex() - 1));
+    gradeNext.addEventListener("click", () => selectGradeByIndex(currentGradeIndex() + 1));
 
     // ── Status toggle (Flash is a full option: status=send, flash=true) ───
     document.getElementById("status-group").addEventListener("click", e => {
@@ -399,7 +412,6 @@
 
       const adminKey = keyInput.value.trim();
       if (!adminKey) return showMsg("Enter your admin key.", "error");
-      if (!selectedGrade) return showMsg("Pick a grade.", "error");
 
       submitBtn.disabled = true;
       msgEl.className = "msg";
@@ -431,8 +443,7 @@
           document.getElementById("name").value    = "";
           document.getElementById("notes").value   = "";
           document.getElementById("video").value   = "";
-          selectedGrade = ""; gradeHid.value = "";
-          renderGradeGrid();
+          selectGradeByIndex(0);
         }
       } catch (err) {
         showMsg(`Network error: ${err.message}`, "error");

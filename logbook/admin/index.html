@@ -115,6 +115,28 @@
       color: var(--color-accent-text);
     }
 
+    /* ── Type toggle: equal-width buttons ────────────────────────────────── */
+    #type-group .toggle-btn {
+      flex: 1 1 0;
+      min-width: 4.5rem;
+      text-align: center;
+    }
+
+    /* ── Status toggle: square icon-over-label buttons, equal width ──────── */
+    #status-group { flex-wrap: nowrap; }
+    #status-group .toggle-btn {
+      flex: 1 1 0;
+      aspect-ratio: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .3rem;
+      padding: .5rem .2rem;
+    }
+    .status-icon { font-size: 1.5rem; line-height: 1; }
+    .status-label {
+      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
     /* ── Grade picker ──────────────────────────────────────────────────── */
     .grade-row {
       display: flex; align-items: stretch; gap: .6rem; margin-bottom: .75rem;
@@ -229,11 +251,21 @@
 
     <div class="section-label">Status</div>
     <div class="toggle-bar" id="status-group">
-      <button type="button" class="toggle-btn" data-value="flash">⚡ Flash</button>
-      <button type="button" class="toggle-btn active" data-value="send">✅ Send</button>
-      <button type="button" class="toggle-btn" data-value="project">🌶️ Project</button>
-      <button type="button" class="toggle-btn" data-value="wishlist">👀 Wishlist</button>
-      <button type="button" class="toggle-btn" data-value="abandoned">❌ Abandoned</button>
+      <button type="button" class="toggle-btn" data-value="flash">
+        <span class="status-icon">⚡</span><span class="status-label">Flash</span>
+      </button>
+      <button type="button" class="toggle-btn active" data-value="send">
+        <span class="status-icon">✅</span><span class="status-label">Send</span>
+      </button>
+      <button type="button" class="toggle-btn" data-value="project">
+        <span class="status-icon">🌶️</span><span class="status-label">Project</span>
+      </button>
+      <button type="button" class="toggle-btn" data-value="wishlist">
+        <span class="status-icon">👀</span><span class="status-label">Wishlist</span>
+      </button>
+      <button type="button" class="toggle-btn" data-value="abandoned">
+        <span class="status-icon">❌</span><span class="status-label">Abandoned</span>
+      </button>
     </div>
 
     <div class="section-label">When</div>
@@ -275,17 +307,17 @@
       { g: "5+",  v: "V0",  c: "var(--grade-easy)" },
       { g: "5A",  v: "V0",  c: "var(--grade-easy)" },
       { g: "5B",  v: "V1",  c: "var(--grade-easy)" },
-      { g: "5C",  v: "V1",  c: "var(--grade-easy)" },
-      { g: "6A",  v: "V2",  c: "var(--grade-6a)"   },
+      { g: "5C",  v: "V2",  c: "var(--grade-easy)" },
+      { g: "6A",  v: "V3",  c: "var(--grade-6a)"   },
       { g: "6A+", v: "V3",  c: "var(--grade-6a)"   },
       { g: "6B",  v: "V4",  c: "var(--grade-6b)"   },
       { g: "6B+", v: "V4",  c: "var(--grade-6b)"   },
       { g: "6C",  v: "V5",  c: "var(--grade-6c)"   },
-      { g: "6C+", v: "V6",  c: "var(--grade-6c)"   },
+      { g: "6C+", v: "V5",  c: "var(--grade-6c)"   },
       { g: "7A",  v: "V6",  c: "var(--grade-7a)"   },
       { g: "7A+", v: "V7",  c: "var(--grade-7a)"   },
       { g: "7B",  v: "V8",  c: "var(--grade-7b)"   },
-      { g: "7B+", v: "V9",  c: "var(--grade-7b)"   },
+      { g: "7B+", v: "V8",  c: "var(--grade-7b)"   },
       { g: "7C",  v: "V9",  c: "var(--grade-7c)"   },
       { g: "7C+", v: "V10", c: "var(--grade-7c)"   },
       { g: "8A",  v: "V11", c: "var(--grade-8a)"   },

@@ -13,8 +13,7 @@
  *   ADMIN_KEY              — secret used by the admin page to authenticate writes
  */
 
-import { spawnSync }                       from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, dirname }                   from "node:path";
 import { fileURLToPath }                   from "node:url";
 
@@ -48,34 +47,6 @@ function step(label) { console.log(`\n── ${label}`); }
 function ok(msg)     { console.log(`   ✓ ${msg}`); }
 function warn(msg)   { console.log(`   ⚠ ${msg}`); }
 function die(msg)    { console.error(`\n✗ ${msg}`); process.exit(1); }
-
-// ── Process helpers ───────────────────────────────────────────────────────────
-
-function run(args, { input } = {}) {
-  const [cmd, ...rest] = args;
-  const r = spawnSync(cmd, rest, {
-    encoding: "utf-8",
-    stdio: input !== undefined ? ["pipe", "pipe", "pipe"] : ["inherit", "pipe", "pipe"],
-    input,
-    env: process.env,
-  });
-  if (r.status !== 0) die(`Command failed: ${args.join(" ")}\n${r.stderr || r.stdout}`);
-  return (r.stdout ?? "").trim();
-}
-
-function runIdempotent(args, { input, alreadyHints = [] } = {}) {
-  const [cmd, ...rest] = args;
-  const r = spawnSync(cmd, rest, {
-    encoding: "utf-8",
-    stdio: input !== undefined ? ["pipe", "pipe", "pipe"] : ["inherit", "pipe", "pipe"],
-    input,
-    env: process.env,
-  });
-  if (r.status === 0) return true;
-  const out = ((r.stdout ?? "") + (r.stderr ?? "")).toLowerCase();
-  if (alreadyHints.some(h => out.includes(h.toLowerCase()))) return false; // already existed
-  die(`Command failed: ${args.join(" ")}\n${r.stderr || r.stdout}`);
-}
 
 // ── Cloudflare API ────────────────────────────────────────────────────────────
 
@@ -166,12 +137,23 @@ async function ensureKvBinding(accountId, projectName, namespaceId) {
   ok(`${KV_BINDING} → ${namespaceId}`);
 }
 
-function ensureAdminSecret(projectName, adminKey) {
+async function ensureAdminSecret(accountId, projectName, adminKey) {
   step("ADMIN_KEY secret");
-  runIdempotent(
-    ["npx", "--yes", "wrangler", "pages", "secret", "put", "ADMIN_KEY", "--project-name", projectName],
-    { input: `${adminKey}\n`, alreadyHints: ["already exists"] }
-  );
+  const project = await cfApi("GET", `/accounts/${accountId}/pages/projects/${projectName}`);
+  const prodCfg = project.deployment_configs?.production ?? {};
+
+  await cfApi("PATCH", `/accounts/${accountId}/pages/projects/${projectName}`, {
+    deployment_configs: {
+      production: {
+        ...prodCfg,
+        env_vars: {
+          ...(prodCfg.env_vars ?? {}),
+          ADMIN_KEY: { value: adminKey, type: "secret_text" },
+        },
+      },
+      preview: project.deployment_configs?.preview ?? {},
+    },
+  });
   ok("ADMIN_KEY set");
 }
 
@@ -216,7 +198,7 @@ async function main() {
 
   const namespaceId = await ensureKvNamespace(accountId);
   await ensureKvBinding(accountId, projectName, namespaceId);
-  ensureAdminSecret(projectName, adminKey);
+  await ensureAdminSecret(accountId, projectName, adminKey);
   await seedKv(accountId, namespaceId);
 
   console.log(`

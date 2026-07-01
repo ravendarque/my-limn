@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logbook Admin</title>
+  <link rel="stylesheet" href="../../limn-engine.css">
+  <style>
+    body {
+      background: var(--color-bg); color: var(--color-text);
+      padding: 1.5rem 1rem 4rem; max-width: 560px; margin: 0 auto;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-accent); margin-bottom: .25rem; }
+    .subtitle { color: var(--color-text-muted); font-size: .9rem; margin-bottom: 1.75rem; }
+
+    a.back-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--color-accent); text-decoration: none;
+      font-size: .9rem; margin-bottom: 1.25rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+    label { display: block; font-size: .82rem; color: var(--color-text-muted); margin-bottom: .3rem; font-weight: 500; }
+    input, select, textarea {
+      width: 100%; box-sizing: border-box;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: .6rem .85rem;
+      color: var(--color-text);
+      font-size: 1rem;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--color-accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .row { display: flex; gap: .75rem; }
+    .row .field { flex: 1; }
+
+    .checkbox-field {
+      display: flex; align-items: center; gap: .6rem;
+      margin-bottom: 1rem;
+    }
+    .checkbox-field input { width: auto; }
+    .checkbox-field label { margin: 0; font-size: 1rem; color: var(--color-text); }
+
+    #flash-row { display: none; }
+    #flash-row.visible { display: flex; }
+
+    .key-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: .85rem;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .key-section label { margin: 0; white-space: nowrap; color: var(--color-text-muted); font-size: .82rem; }
+    .key-section input { flex: 1; font-family: monospace; }
+
+    button[type="submit"] {
+      width: 100%;
+      background: var(--color-accent); color: var(--color-accent-text);
+      border: none; border-radius: 8px;
+      padding: .85rem;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer;
+      margin-top: .5rem;
+    }
+    button[type="submit"]:disabled { opacity: .5; cursor: not-allowed; }
+
+    .msg {
+      margin-top: 1rem; padding: .75rem 1rem;
+      border-radius: 8px; font-size: .9rem; display: none;
+    }
+    .msg.success {
+      background: color-mix(in srgb, #4ade80 12%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, #4ade80 40%, transparent);
+      color: var(--color-text); display: block;
+    }
+    .msg.error {
+      background: color-mix(in srgb, #f87171 12%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
+      color: var(--color-text); display: block;
+    }
+  </style>
+</head>
+<body>
+  <a href="/logbook" class="back-link">← Logbook</a>
+  <h1>Add Entry</h1>
+  <p class="subtitle">New send, project, or wishlist item.</p>
+
+  <div class="key-section">
+    <label for="admin-key">Admin key</label>
+    <input type="password" id="admin-key" autocomplete="current-password" placeholder="••••••••">
+  </div>
+
+  <form id="entry-form" autocomplete="off">
+    <div class="row">
+      <div class="field">
+        <label for="place">Place *</label>
+        <input type="text" id="place" required placeholder="Magic Wood">
+      </div>
+      <div class="field">
+        <label for="area">Sector</label>
+        <input type="text" id="area" placeholder="Mitte">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="name">Problem / Route name *</label>
+      <input type="text" id="name" required placeholder="Conan">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="grade">Grade *</label>
+        <input type="text" id="grade" required placeholder="7C+">
+      </div>
+      <div class="field">
+        <label for="type">Type *</label>
+        <select id="type" required>
+          <option value="boulder">Boulder</option>
+          <option value="lead">Lead</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="status">Status *</label>
+        <select id="status" required>
+          <option value="send">Send ✅</option>
+          <option value="project">Project 🌶️</option>
+          <option value="wishlist">Wishlist 👀</option>
+          <option value="abandoned">Abandoned ❌</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="text" id="date" placeholder="2026-06 or 2026-06-25">
+      </div>
+    </div>
+
+    <div class="checkbox-field" id="flash-row">
+      <input type="checkbox" id="flash">
+      <label for="flash">Flash ⚡</label>
+    </div>
+
+    <div class="field">
+      <label for="notes">Notes</label>
+      <textarea id="notes" placeholder="Beta, grade comments, etc."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="video">Video URL</label>
+      <input type="url" id="video" placeholder="https://…">
+    </div>
+
+    <button type="submit" id="submit-btn">Add to logbook</button>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <script type="module">
+    import { applyTheme, loadTheme } from "../../limn-engine.js";
+    import { load } from "https://esm.sh/js-yaml@4";
+
+    // Apply theme
+    try {
+      const cfgRes = await fetch("../../config.yaml");
+      if (cfgRes.ok) {
+        const config = load(await cfgRes.text());
+        const theme  = await loadTheme(config.theme, "../../");
+        applyTheme(theme);
+      }
+    } catch {}
+
+    // Persist admin key in sessionStorage
+    const keyInput = document.getElementById("admin-key");
+    keyInput.value = sessionStorage.getItem("logbook_admin_key") ?? "";
+    keyInput.addEventListener("change", () => {
+      sessionStorage.setItem("logbook_admin_key", keyInput.value);
+    });
+
+    // Show flash checkbox only for sends
+    const statusEl = document.getElementById("status");
+    const flashRow = document.getElementById("flash-row");
+    function updateFlashVisibility() {
+      flashRow.classList.toggle("visible", statusEl.value === "send");
+    }
+    statusEl.addEventListener("change", updateFlashVisibility);
+    updateFlashVisibility();
+
+    // Submit
+    const form    = document.getElementById("entry-form");
+    const btn     = document.getElementById("submit-btn");
+    const msgEl   = document.getElementById("msg");
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      btn.disabled = true;
+      msgEl.className = "msg";
+      msgEl.textContent = "";
+
+      const adminKey = keyInput.value.trim();
+      if (!adminKey) {
+        showMsg("Enter your admin key first.", "error");
+        btn.disabled = false;
+        return;
+      }
+
+      const entry = {
+        place:  document.getElementById("place").value.trim(),
+        area:   document.getElementById("area").value.trim(),
+        name:   document.getElementById("name").value.trim(),
+        grade:  document.getElementById("grade").value.trim(),
+        type:   document.getElementById("type").value,
+        status: statusEl.value,
+        flash:  document.getElementById("flash").checked,
+        date:   document.getElementById("date").value.trim() || null,
+        notes:  document.getElementById("notes").value.trim() || null,
+        video:  document.getElementById("video").value.trim() || null,
+      };
+
+      try {
+        const res = await fetch("/api/logbook", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Key": adminKey,
+          },
+          body: JSON.stringify(entry),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          showMsg(data.error ?? `Error ${res.status}`, "error");
+        } else {
+          showMsg(`✅ "${entry.name}" added. ${data.entries.length} total entries.`, "success");
+          form.reset();
+          updateFlashVisibility();
+        }
+      } catch (err) {
+        showMsg(`Network error: ${err.message}`, "error");
+      }
+
+      btn.disabled = false;
+    });
+
+    function showMsg(text, type) {
+      msgEl.textContent = text;
+      msgEl.className = `msg ${type}`;
+    }
+  </script>
+</body>
+</html>

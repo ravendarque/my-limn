@@ -243,7 +243,7 @@
   import { applyTheme, loadTheme } from "../limn-engine.js";
 
   // ── Config ───────────────────────────────────────────────────────────
-  const DATA_URL = "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/logbook.json";
+  const DATA_URL = "/api/logbook";
 
   // ── Place → country map ──────────────────────────────────────────────
   const PLACE_COUNTRY = {
@@ -261,6 +261,7 @@
     "Northumberland":      "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
     "Cairngorms":          "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland",
     "Peak District":       "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+    "Rocklands":           "🇿🇦 South Africa",
   };
 
   // ── Grade ordering ───────────────────────────────────────────────────
@@ -539,7 +540,7 @@
 
     // Load data
     try {
-      const res = await fetch(DATA_URL + "?nocache=" + Date.now());
+      const res = await fetch(DATA_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       ALL_ENTRIES = data.entries ?? [];

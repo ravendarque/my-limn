@@ -1,62 +1,87 @@
 /**
  * Provision my-limn logbook infrastructure.
- * Idempotent — safe to re-run.
+ * Idempotent — safe to re-run. Interactive — prompts for anything not
+ * already in the environment, and never writes secrets to disk.
  *
  * Usage:
- *   cp .env.example .env   # fill in values
  *   node scripts/provision.mjs
  *
- * Required env vars (in .env or environment):
+ * Prompts (leave blank to skip the step that depends on it):
  *   CLOUDFLARE_API_TOKEN   — CF API token with Workers KV + Pages edit permissions
  *   CLOUDFLARE_ACCOUNT_ID  — your CF account ID
  *   CF_PAGES_PROJECT       — Cloudflare Pages project name (e.g. "my-limn")
  *   ADMIN_KEY              — secret used by the admin page to authenticate writes
+ *
+ * Any of these can also be pre-set as real environment variables (e.g. in CI)
+ * to skip the matching prompt.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { join, dirname }                   from "node:path";
-import { fileURLToPath }                   from "node:url";
+import { createInterface } from "node:readline";
 
-const __dirname   = dirname(fileURLToPath(import.meta.url));
-const ROOT        = join(__dirname, "..");
-const ENV_PATH    = join(ROOT, ".env");
-const GIST_URL    = "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/logbook.json";
-const KV_KEY      = "logbook:entries";
-const KV_BINDING  = "LOGBOOK_KV";
-
-// ── .env loader ───────────────────────────────────────────────────────────────
-
-function loadEnv() {
-  if (!existsSync(ENV_PATH)) return;
-  for (const line of readFileSync(ENV_PATH, "utf-8").split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eq = trimmed.indexOf("=");
-    if (eq === -1) continue;
-    const key = trimmed.slice(0, eq).trim();
-    let val   = trimmed.slice(eq + 1).trim();
-    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'")))
-      val = val.slice(1, -1);
-    if (key && val && !process.env[key]) process.env[key] = val;
-  }
-}
+const GIST_URL   = "https://gist.githubusercontent.com/ravendarque/4faba593347556de3a362d980e4811b8/raw/logbook.json";
+const KV_KEY     = "logbook:entries";
+const KV_BINDING = "LOGBOOK_KV";
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 
 function step(label) { console.log(`\n── ${label}`); }
 function ok(msg)     { console.log(`   ✓ ${msg}`); }
+function skip(msg)   { console.log(`   – ${msg} (skipped)`); }
 function warn(msg)   { console.log(`   ⚠ ${msg}`); }
 function die(msg)    { console.error(`\n✗ ${msg}`); process.exit(1); }
+
+// ── Interactive prompts (never echo secrets, never write to disk) ────────────
+
+const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+function ask(question) {
+  return new Promise(resolve => rl.question(question, answer => resolve(answer.trim())));
+}
+
+// Masked prompt for secrets — echoes "*" per keystroke instead of the value.
+function askSecret(question) {
+  return new Promise(resolve => {
+    const stdin = process.stdin;
+    process.stdout.write(question);
+    let value = "";
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.setEncoding("utf8");
+
+    const onData = char => {
+      if (char === "\n" || char === "\r" || char === "") {
+        stdin.setRawMode(false);
+        stdin.pause();
+        stdin.removeListener("data", onData);
+        process.stdout.write("\n");
+        resolve(value.trim());
+        return;
+      }
+      if (char === "") { process.stdout.write("\n"); process.exit(130); } // Ctrl-C
+      if (char === "") { value = value.slice(0, -1); return; } // backspace
+      value += char;
+      process.stdout.write("*");
+    };
+
+    stdin.on("data", onData);
+  });
+}
+
+async function resolveVar(name, { secret = false, prompt } = {}) {
+  if (process.env[name]) return process.env[name]; // pre-set (e.g. CI) wins, no prompt
+  const value = secret ? await askSecret(`${prompt}: `) : await ask(`${prompt}: `);
+  return value || null;
+}
 
 // ── Cloudflare API ────────────────────────────────────────────────────────────
 
 const CF_BASE = "https://api.cloudflare.com/client/v4";
 
-async function cfApi(method, path, body) {
+async function cfApi(apiToken, method, path, body) {
   const res = await fetch(`${CF_BASE}${path}`, {
     method,
     headers: {
-      Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+      Authorization: `Bearer ${apiToken}`,
       "Content-Type": "application/json",
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
@@ -68,53 +93,48 @@ async function cfApi(method, path, body) {
   return data.result;
 }
 
-// PUT a raw value directly into KV (avoids CLI arg-length limits)
-async function kvPut(accountId, namespaceId, key, value) {
+async function kvPut(apiToken, accountId, namespaceId, key, value) {
   const res = await fetch(
     `${CF_BASE}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(key)}`,
     {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${apiToken}`, "Content-Type": "application/json" },
       body: value,
     }
   );
   const data = await res.json();
-  if (!data.success) {
-    die(`KV put failed:\n${JSON.stringify(data.errors, null, 2)}`);
-  }
+  if (!data.success) die(`KV put failed:\n${JSON.stringify(data.errors, null, 2)}`);
 }
 
-async function kvGet(accountId, namespaceId, key) {
+async function kvGet(apiToken, accountId, namespaceId, key) {
   const res = await fetch(
     `${CF_BASE}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(key)}`,
-    { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } }
+    { headers: { Authorization: `Bearer ${apiToken}` } }
   );
-  if (res.status === 404) return null;
   if (!res.ok) return null;
   return res.text();
 }
 
 // ── Provision steps ───────────────────────────────────────────────────────────
 
-async function ensureKvNamespace(accountId) {
+async function ensureKvNamespace(apiToken, accountId) {
   step("KV namespace");
-  const namespaces = await cfApi("GET", `/accounts/${accountId}/storage/kv/namespaces?per_page=100`);
+  const namespaces = await cfApi(apiToken, "GET", `/accounts/${accountId}/storage/kv/namespaces?per_page=100`);
   const existing = namespaces.find(ns => ns.title === KV_BINDING);
   if (existing) {
     ok(`${KV_BINDING} already exists (${existing.id})`);
     return existing.id;
   }
-  const ns = await cfApi("POST", `/accounts/${accountId}/storage/kv/namespaces`, { title: KV_BINDING });
+  const ns = await cfApi(apiToken, "POST", `/accounts/${accountId}/storage/kv/namespaces`, { title: KV_BINDING });
   ok(`Created ${KV_BINDING} (${ns.id})`);
   return ns.id;
 }
 
-async function ensureKvBinding(accountId, projectName, namespaceId) {
+async function ensureKvBinding(apiToken, accountId, projectName, namespaceId) {
   step("Pages KV binding");
-  const project = await cfApi("GET", `/accounts/${accountId}/pages/projects/${projectName}`);
+  if (!projectName) { skip("CF_PAGES_PROJECT not provided"); return; }
+
+  const project = await cfApi(apiToken, "GET", `/accounts/${accountId}/pages/projects/${projectName}`);
   const prodCfg = project.deployment_configs?.production ?? {};
 
   if (prodCfg.kv_namespaces?.[KV_BINDING]?.namespace_id === namespaceId) {
@@ -122,14 +142,11 @@ async function ensureKvBinding(accountId, projectName, namespaceId) {
     return;
   }
 
-  await cfApi("PATCH", `/accounts/${accountId}/pages/projects/${projectName}`, {
+  await cfApi(apiToken, "PATCH", `/accounts/${accountId}/pages/projects/${projectName}`, {
     deployment_configs: {
       production: {
         ...prodCfg,
-        kv_namespaces: {
-          ...(prodCfg.kv_namespaces ?? {}),
-          [KV_BINDING]: { namespace_id: namespaceId },
-        },
+        kv_namespaces: { ...(prodCfg.kv_namespaces ?? {}), [KV_BINDING]: { namespace_id: namespaceId } },
       },
       preview: project.deployment_configs?.preview ?? {},
     },
@@ -137,19 +154,19 @@ async function ensureKvBinding(accountId, projectName, namespaceId) {
   ok(`${KV_BINDING} → ${namespaceId}`);
 }
 
-async function ensureAdminSecret(accountId, projectName, adminKey) {
+async function ensureAdminSecret(apiToken, accountId, projectName, adminKey) {
   step("ADMIN_KEY secret");
-  const project = await cfApi("GET", `/accounts/${accountId}/pages/projects/${projectName}`);
+  if (!projectName) { skip("CF_PAGES_PROJECT not provided"); return; }
+  if (!adminKey)     { skip("ADMIN_KEY not provided — leaving existing value untouched"); return; }
+
+  const project = await cfApi(apiToken, "GET", `/accounts/${accountId}/pages/projects/${projectName}`);
   const prodCfg = project.deployment_configs?.production ?? {};
 
-  await cfApi("PATCH", `/accounts/${accountId}/pages/projects/${projectName}`, {
+  await cfApi(apiToken, "PATCH", `/accounts/${accountId}/pages/projects/${projectName}`, {
     deployment_configs: {
       production: {
         ...prodCfg,
-        env_vars: {
-          ...(prodCfg.env_vars ?? {}),
-          ADMIN_KEY: { value: adminKey, type: "secret_text" },
-        },
+        env_vars: { ...(prodCfg.env_vars ?? {}), ADMIN_KEY: { value: adminKey, type: "secret_text" } },
       },
       preview: project.deployment_configs?.preview ?? {},
     },
@@ -157,9 +174,9 @@ async function ensureAdminSecret(accountId, projectName, adminKey) {
   ok("ADMIN_KEY set");
 }
 
-async function seedKv(accountId, namespaceId) {
+async function seedKv(apiToken, accountId, namespaceId) {
   step("Seed KV");
-  const existing = await kvGet(accountId, namespaceId, KV_KEY);
+  const existing = await kvGet(apiToken, accountId, namespaceId, KV_KEY);
   if (existing) {
     try {
       const parsed = JSON.parse(existing);
@@ -173,33 +190,33 @@ async function seedKv(accountId, namespaceId) {
   const res = await fetch(GIST_URL);
   if (!res.ok) die(`Failed to fetch gist: ${res.status}`);
   const { entries } = await res.json();
-  const payload = JSON.stringify({ entries });
-
-  await kvPut(accountId, namespaceId, KV_KEY, payload);
+  await kvPut(apiToken, accountId, namespaceId, KV_KEY, JSON.stringify({ entries }));
   ok(`Seeded ${entries.length} entries`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("Provisioning my-limn logbook…");
+  console.log("Provisioning my-limn logbook…\n");
+  console.log("Leave any prompt blank to skip the step(s) that need it.");
 
-  loadEnv();
+  const apiToken   = await resolveVar("CLOUDFLARE_API_TOKEN", { secret: true, prompt: "Cloudflare API token" });
+  const accountId  = await resolveVar("CLOUDFLARE_ACCOUNT_ID", { prompt: "Cloudflare account ID" });
 
-  const REQUIRED = ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "CF_PAGES_PROJECT", "ADMIN_KEY"];
-  const missing = REQUIRED.filter(k => !process.env[k]);
-  if (missing.length) {
-    die(`Missing required variables:\n  ${missing.join("\n  ")}\n\nCopy .env.example to .env and fill in the values.`);
+  if (!apiToken || !accountId) {
+    rl.close();
+    die("Cloudflare API token and account ID are both required — nothing to provision without them.");
   }
 
-  const accountId   = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const projectName = process.env.CF_PAGES_PROJECT;
-  const adminKey    = process.env.ADMIN_KEY;
+  const projectName = await resolveVar("CF_PAGES_PROJECT", { prompt: "Cloudflare Pages project name" });
+  const adminKey     = await resolveVar("ADMIN_KEY", { secret: true, prompt: "Admin key (blank = leave unchanged)" });
 
-  const namespaceId = await ensureKvNamespace(accountId);
-  await ensureKvBinding(accountId, projectName, namespaceId);
-  await ensureAdminSecret(accountId, projectName, adminKey);
-  await seedKv(accountId, namespaceId);
+  rl.close();
+
+  const namespaceId = await ensureKvNamespace(apiToken, accountId);
+  await ensureKvBinding(apiToken, accountId, projectName, namespaceId);
+  await ensureAdminSecret(apiToken, accountId, projectName, adminKey);
+  await seedKv(apiToken, accountId, namespaceId);
 
   console.log(`
 ──────────────────────────────────────────
@@ -208,7 +225,7 @@ async function main() {
   /logbook        reads from KV via Pages Function
   /logbook/admin  add entries with your ADMIN_KEY
 
-Re-run anytime — all steps are idempotent.
+Re-run anytime — all steps are idempotent, and nothing is written to disk.
 ──────────────────────────────────────────`);
 }
 

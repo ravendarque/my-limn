@@ -88,26 +88,31 @@
     }
     textarea:focus { border-color: var(--color-accent); }
 
-    /* ── Pill toggles (type, status) ──────────────────────────────────── */
-    .pill-group {
-      display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem;
-    }
-    .pill {
-      padding: .5rem .9rem;
+    /* ── Segmented toggle bar (type, status) ────────────────────────────── */
+    .toggle-bar {
+      display: flex; flex-wrap: wrap;
       border: 1px solid var(--color-border);
-      border-radius: calc(var(--r) * 3);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: .75rem;
+    }
+    .toggle-btn {
+      flex: 1 0 auto;
+      border: none;
+      border-right: 1px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-muted);
-      font-size: .9rem; cursor: pointer;
-      transition: border-color .12s, background .12s, color .12s;
-      user-select: none; white-space: nowrap;
+      font-size: .85rem; font-weight: 600;
+      padding: .55rem .7rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s, color .12s;
     }
-    .pill:hover { border-color: var(--color-accent); color: var(--color-text); }
-    .pill.active {
+    .toggle-btn:last-child { border-right: none; }
+    .toggle-btn:hover { color: var(--color-text); }
+    .toggle-btn.active {
       background: var(--color-accent);
-      border-color: var(--color-accent);
       color: var(--color-accent-text);
-      font-weight: 600;
     }
 
     /* ── Grade picker ──────────────────────────────────────────────────── */
@@ -115,7 +120,7 @@
       display: flex; align-items: stretch; gap: .6rem; margin-bottom: .75rem;
     }
     .grade-picker {
-      flex: 1; display: flex; align-items: stretch; gap: .5rem;
+      display: flex; align-items: stretch; gap: .5rem;
     }
     .grade-step {
       flex: 0 0 2.75rem;
@@ -129,31 +134,11 @@
     .grade-step:hover { border-color: var(--color-accent); }
     .grade-step:active { transform: scale(.94); }
 
-    /* ── Type toggle (segmented) ──────────────────────────────────────── */
-    .type-toggle {
-      flex: 0 0 5.75rem;
-      display: flex; flex-direction: column;
-      border: 1px solid var(--color-border);
-      border-radius: var(--r);
-      overflow: hidden;
-    }
-    .type-btn {
-      flex: 1; border: none; cursor: pointer;
-      background: var(--color-surface);
-      color: var(--color-text-muted);
-      font-size: .78rem; font-weight: 600;
-      padding: 0 .4rem;
-      transition: background .12s, color .12s;
-    }
-    .type-btn + .type-btn { border-top: 1px solid var(--color-border); }
-    .type-btn:hover { color: var(--color-text); }
-    .type-btn.active {
-      background: var(--color-accent);
-      color: var(--color-accent-text);
-    }
+    #type-group { margin-bottom: 0; }
 
     #grade-select {
-      flex: 1; min-width: 0;
+      box-sizing: border-box;
+      width: 6.5rem;
       border: 1px solid currentColor;
       border-radius: var(--r);
       background: color-mix(in srgb, currentColor 25%, var(--color-surface));
@@ -236,19 +221,19 @@
         <select id="grade-select"></select>
         <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">›</button>
       </div>
-      <div class="type-toggle" id="type-group">
-        <button type="button" class="type-btn active" data-value="boulder">Boulder</button>
-        <button type="button" class="type-btn" data-value="lead">Lead</button>
+      <div class="toggle-bar" id="type-group">
+        <button type="button" class="toggle-btn active" data-value="boulder">Boulder</button>
+        <button type="button" class="toggle-btn" data-value="lead">Lead</button>
       </div>
     </div>
 
     <div class="section-label">Status</div>
-    <div class="pill-group" id="status-group">
-      <button type="button" class="pill" data-value="flash">⚡ Flash</button>
-      <button type="button" class="pill active" data-value="send">✅ Send</button>
-      <button type="button" class="pill" data-value="project">🌶️ Project</button>
-      <button type="button" class="pill" data-value="wishlist">👀 Wishlist</button>
-      <button type="button" class="pill" data-value="abandoned">❌ Abandoned</button>
+    <div class="toggle-bar" id="status-group">
+      <button type="button" class="toggle-btn" data-value="flash">⚡ Flash</button>
+      <button type="button" class="toggle-btn active" data-value="send">✅ Send</button>
+      <button type="button" class="toggle-btn" data-value="project">🌶️ Project</button>
+      <button type="button" class="toggle-btn" data-value="wishlist">👀 Wishlist</button>
+      <button type="button" class="toggle-btn" data-value="abandoned">❌ Abandoned</button>
     </div>
 
     <div class="section-label">When</div>
@@ -379,10 +364,10 @@
 
     // ── Type toggle ───────────────────────────────────────────────────────
     document.getElementById("type-group").addEventListener("click", e => {
-      const btn = e.target.closest(".type-btn");
+      const btn = e.target.closest(".toggle-btn");
       if (!btn) return;
       selectedType = btn.dataset.value;
-      document.querySelectorAll("#type-group .type-btn").forEach(b =>
+      document.querySelectorAll("#type-group .toggle-btn").forEach(b =>
         b.classList.toggle("active", b === btn));
       renderGradeOptions();
       selectGradeByIndex(0);
@@ -425,13 +410,13 @@
 
     // ── Status toggle (Flash is a full option: status=send, flash=true) ───
     document.getElementById("status-group").addEventListener("click", e => {
-      const pill = e.target.closest(".pill");
-      if (!pill) return;
-      const value = pill.dataset.value;
+      const btn = e.target.closest(".toggle-btn");
+      if (!btn) return;
+      const value = btn.dataset.value;
       selectedStatus = value === "flash" ? "send" : value;
       isFlash = value === "flash";
-      document.querySelectorAll("#status-group .pill").forEach(p =>
-        p.classList.toggle("active", p === pill));
+      document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
+        b.classList.toggle("active", b === btn));
     });
 
     // ── Submit ────────────────────────────────────────────────────────────

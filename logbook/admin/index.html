@@ -54,8 +54,9 @@
       margin: 1.25rem 0 .5rem;
     }
     .sub-label {
-      font-size: .7rem; color: var(--color-text-muted);
-      margin-bottom: .3rem;
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--color-text-muted);
+      margin-bottom: .5rem;
     }
 
     /* ── Text inputs ───────────────────────────────────────────────────── */
@@ -110,8 +111,11 @@
     }
 
     /* ── Grade picker ──────────────────────────────────────────────────── */
+    .grade-row {
+      display: flex; align-items: stretch; gap: .6rem; margin-bottom: .75rem;
+    }
     .grade-picker {
-      display: flex; align-items: stretch; gap: .5rem; margin-bottom: .75rem;
+      flex: 1; display: flex; align-items: stretch; gap: .5rem;
     }
     .grade-step {
       flex: 0 0 2.75rem;
@@ -124,6 +128,29 @@
     }
     .grade-step:hover { border-color: var(--color-accent); }
     .grade-step:active { transform: scale(.94); }
+
+    /* ── Type toggle (segmented) ──────────────────────────────────────── */
+    .type-toggle {
+      flex: 0 0 5.75rem;
+      display: flex; flex-direction: column;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .type-btn {
+      flex: 1; border: none; cursor: pointer;
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      font-size: .78rem; font-weight: 600;
+      padding: 0 .4rem;
+      transition: background .12s, color .12s;
+    }
+    .type-btn + .type-btn { border-top: 1px solid var(--color-border); }
+    .type-btn:hover { color: var(--color-text); }
+    .type-btn.active {
+      background: var(--color-accent);
+      color: var(--color-accent-text);
+    }
 
     #grade-select {
       flex: 1; min-width: 0;
@@ -184,12 +211,6 @@
 
   <form id="entry-form" autocomplete="off">
 
-    <div class="section-label">Type</div>
-    <div class="pill-group" id="type-group">
-      <button type="button" class="pill active" data-value="boulder">Boulder</button>
-      <button type="button" class="pill" data-value="lead">Lead</button>
-    </div>
-
     <div class="section-label">Problem/route name</div>
     <div class="field">
       <input type="text" id="name" required>
@@ -209,10 +230,16 @@
     </div>
 
     <div class="section-label">Grade</div>
-    <div class="grade-picker">
-      <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">‹</button>
-      <select id="grade-select"></select>
-      <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">›</button>
+    <div class="grade-row">
+      <div class="grade-picker">
+        <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">‹</button>
+        <select id="grade-select"></select>
+        <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">›</button>
+      </div>
+      <div class="type-toggle" id="type-group">
+        <button type="button" class="type-btn active" data-value="boulder">Boulder</button>
+        <button type="button" class="type-btn" data-value="lead">Lead</button>
+      </div>
     </div>
 
     <div class="section-label">Status</div>
@@ -260,26 +287,26 @@
 
     // ── Grade data ────────────────────────────────────────────────────────
     const BOULDER_GRADES = [
-      { g: "5+",  c: "var(--grade-easy)" },
-      { g: "5A",  c: "var(--grade-easy)" },
-      { g: "5B",  c: "var(--grade-easy)" },
-      { g: "5C",  c: "var(--grade-easy)" },
-      { g: "6A",  c: "var(--grade-6a)"   },
-      { g: "6A+", c: "var(--grade-6a)"   },
-      { g: "6B",  c: "var(--grade-6b)"   },
-      { g: "6B+", c: "var(--grade-6b)"   },
-      { g: "6C",  c: "var(--grade-6c)"   },
-      { g: "6C+", c: "var(--grade-6c)"   },
-      { g: "7A",  c: "var(--grade-7a)"   },
-      { g: "7A+", c: "var(--grade-7a)"   },
-      { g: "7B",  c: "var(--grade-7b)"   },
-      { g: "7B+", c: "var(--grade-7b)"   },
-      { g: "7C",  c: "var(--grade-7c)"   },
-      { g: "7C+", c: "var(--grade-7c)"   },
-      { g: "8A",  c: "var(--grade-8a)"   },
-      { g: "8A+", c: "var(--grade-8a)"   },
-      { g: "8B",  c: "var(--grade-8a)"   },
-      { g: "8B+", c: "var(--grade-8a)"   },
+      { g: "5+",  v: "V0",  c: "var(--grade-easy)" },
+      { g: "5A",  v: "V0",  c: "var(--grade-easy)" },
+      { g: "5B",  v: "V1",  c: "var(--grade-easy)" },
+      { g: "5C",  v: "V1",  c: "var(--grade-easy)" },
+      { g: "6A",  v: "V2",  c: "var(--grade-6a)"   },
+      { g: "6A+", v: "V3",  c: "var(--grade-6a)"   },
+      { g: "6B",  v: "V4",  c: "var(--grade-6b)"   },
+      { g: "6B+", v: "V4",  c: "var(--grade-6b)"   },
+      { g: "6C",  v: "V5",  c: "var(--grade-6c)"   },
+      { g: "6C+", v: "V6",  c: "var(--grade-6c)"   },
+      { g: "7A",  v: "V6",  c: "var(--grade-7a)"   },
+      { g: "7A+", v: "V7",  c: "var(--grade-7a)"   },
+      { g: "7B",  v: "V8",  c: "var(--grade-7b)"   },
+      { g: "7B+", v: "V9",  c: "var(--grade-7b)"   },
+      { g: "7C",  v: "V9",  c: "var(--grade-7c)"   },
+      { g: "7C+", v: "V10", c: "var(--grade-7c)"   },
+      { g: "8A",  v: "V11", c: "var(--grade-8a)"   },
+      { g: "8A+", v: "V12", c: "var(--grade-8a)"   },
+      { g: "8B",  v: "V13", c: "var(--grade-8a)"   },
+      { g: "8B+", v: "V14", c: "var(--grade-8a)"   },
     ];
     const LEAD_GRADES = [
       { g: "5c",  c: "var(--grade-easy)" },
@@ -352,11 +379,11 @@
 
     // ── Type toggle ───────────────────────────────────────────────────────
     document.getElementById("type-group").addEventListener("click", e => {
-      const pill = e.target.closest(".pill");
-      if (!pill) return;
-      selectedType = pill.dataset.value;
-      document.querySelectorAll("#type-group .pill").forEach(p =>
-        p.classList.toggle("active", p === pill));
+      const btn = e.target.closest(".type-btn");
+      if (!btn) return;
+      selectedType = btn.dataset.value;
+      document.querySelectorAll("#type-group .type-btn").forEach(b =>
+        b.classList.toggle("active", b === btn));
       renderGradeOptions();
       selectGradeByIndex(0);
     });
@@ -367,8 +394,9 @@
     }
 
     function renderGradeOptions() {
+      const boulder = selectedType === "boulder";
       gradeSelect.innerHTML = currentGrades()
-        .map(({ g }) => `<option value="${g}">${g}</option>`)
+        .map(({ g, v }) => `<option value="${g}">${boulder ? `${g}/${v}` : g}</option>`)
         .join("");
     }
 

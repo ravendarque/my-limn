@@ -464,6 +464,16 @@
       cursor: pointer;
     }
     .submit-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .delete-btn {
+      width: 100%; margin-top: .6rem;
+      background: none; color: #f87171;
+      border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
+      border-radius: var(--r);
+      padding: .7rem; font-size: .9rem; font-weight: 600;
+      cursor: pointer;
+    }
+    .delete-btn:hover { background: color-mix(in srgb, #f87171 10%, transparent); }
+    .delete-btn:disabled { opacity: .45; cursor: not-allowed; }
 
     /* ── Message ───────────────────────────────────────────────────────── */
     .msg {
@@ -624,6 +634,7 @@
       </div>
 
       <button type="submit" class="submit-btn" id="entry-submit-btn">Add to logbook</button>
+      <button type="button" class="delete-btn" id="entry-delete-btn" hidden>Delete entry</button>
       <div class="msg" id="entry-msg"></div>
     </form>
   </div>
@@ -786,6 +797,8 @@
         if (!ALL_ENTRIES.some(e => e.id === item.entry.id)) {
           ALL_ENTRIES.push({ ...item.entry, _pending: true });
         }
+      } else if (item.op === "delete") {
+        ALL_ENTRIES = ALL_ENTRIES.filter(e => e.id !== item.entry.id);
       } else {
         const idx = ALL_ENTRIES.findIndex(e => e.id === item.entry.id);
         if (idx !== -1) ALL_ENTRIES[idx] = { ...item.entry, _pending: true };
@@ -807,11 +820,13 @@
     let lastEntries = null;
     for (const item of queue) {
       try {
-        const res = await fetch(DATA_URL, {
-          method: item.op === "edit" ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item.entry),
-        });
+        const res = item.op === "delete"
+          ? await fetch(`${DATA_URL}?id=${encodeURIComponent(item.entry.id)}`, { method: "DELETE" })
+          : await fetch(DATA_URL, {
+              method: item.op === "edit" ? "PUT" : "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(item.entry),
+            });
         if (res.status === 401) {
           remaining.push(item);
           isLoggedIn = false;
@@ -1024,6 +1039,7 @@
   const dateNative = document.getElementById("date-native");
   const datePickerBtn = document.getElementById("date-picker-btn");
   const entrySubmitBtn = document.getElementById("entry-submit-btn");
+  const entryDeleteBtn = document.getElementById("entry-delete-btn");
   const entryMsg      = document.getElementById("entry-msg");
 
   // ── Admin bar ────────────────────────────────────────────────────────
@@ -1218,6 +1234,7 @@
     editingId = entry?.id ?? null;
     entryModalTitle.textContent = editingId ? "Edit entry" : "Add entry";
     entrySubmitBtn.textContent = editingId ? "Save changes" : "Add to logbook";
+    entryDeleteBtn.hidden = !editingId;
     entryMsg.className = "msg";
 
     nameInput.value  = entry?.name  ?? "";
@@ -1236,6 +1253,7 @@
     populateAreas(placeInput.value.trim());
 
     entryOverlay.hidden = false;
+    entryOverlay.scrollTop = 0;
   }
   addBtn.addEventListener("click", () => openEntryModal(null));
   document.getElementById("entry-close").addEventListener("click", () => entryOverlay.hidden = true);
@@ -1303,6 +1321,55 @@
     }
 
     entrySubmitBtn.disabled = false;
+  });
+
+  // ── Entry form: delete (online → API, offline → queue) ───────────────
+  entryDeleteBtn.addEventListener("click", async () => {
+    if (!editingId) return;
+    if (!confirm(`Delete "${nameInput.value.trim()}"? This can't be undone.`)) return;
+
+    entryDeleteBtn.disabled = true;
+    entryMsg.className = "msg";
+    const id = editingId;
+
+    // If this entry only ever existed as a queued, unsynced "add", there's
+    // nothing on the server to delete — just drop it from the queue.
+    const queuedAdd = getQueue().find(item => item.entry.id === id && item.op === "add");
+    if (queuedAdd) {
+      setQueue(getQueue().filter(item => item.entry.id !== id));
+      ALL_ENTRIES = ALL_ENTRIES.filter(e => e.id !== id);
+      entryOverlay.hidden = true;
+      entryDeleteBtn.disabled = false;
+      render();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${DATA_URL}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        entryMsg.textContent = data.error ?? `Error ${res.status}`;
+        entryMsg.className = "msg error";
+        entryDeleteBtn.disabled = false;
+        return;
+      }
+      ALL_ENTRIES = data.entries;
+      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
+      applyPendingToEntries();
+      entryOverlay.hidden = true;
+      render();
+    } catch (err) {
+      // Offline (or server unreachable) — queue for later sync, and
+      // remove it locally so it disappears from the list right away.
+      const queue = getQueue().filter(item => item.entry.id !== id);
+      queue.push({ op: "delete", entry: { id } });
+      setQueue(queue);
+      ALL_ENTRIES = ALL_ENTRIES.filter(e => e.id !== id);
+      entryOverlay.hidden = true;
+      render();
+    }
+
+    entryDeleteBtn.disabled = false;
   });
 
   // ── Event delegation (list controls) ─────────────────────────────────

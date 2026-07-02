@@ -123,3 +123,26 @@ export async function onRequestPut({ request, env }) {
     headers: { "Content-Type": "application/json" },
   });
 }
+
+export async function onRequestDelete({ request, env }) {
+  if (!(await isAuthed(request, env))) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return json({ error: "Missing required field: id" }, 400);
+
+  const raw = await env.LOGBOOK_KV.get(KV_KEY);
+  const { entries = [] } = raw ? JSON.parse(raw) : {};
+
+  const index = entries.findIndex(e => e.id === id);
+  if (index === -1) return json({ error: "Entry not found" }, 404);
+
+  entries.splice(index, 1);
+  const updated = JSON.stringify({ entries });
+  await env.LOGBOOK_KV.put(KV_KEY, updated);
+
+  return new Response(updated, {
+    headers: { "Content-Type": "application/json" },
+  });
+}

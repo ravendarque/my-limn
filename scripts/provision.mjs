@@ -222,8 +222,7 @@ async function main() {
 ──────────────────────────────────────────
 ✓ Done.
 
-  /logbook        reads from KV via Pages Function
-  /logbook/admin  add entries with your ADMIN_KEY
+  /logbook  browse + log in with your ADMIN_KEY to add/edit entries
 
 Re-run anytime — all steps are idempotent, and nothing is written to disk.
 ──────────────────────────────────────────`);

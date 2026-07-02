@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Climbing Logbook</title>
   <link rel="stylesheet" href="../limn-engine.css">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#ff2727">
   <style>
     /* ── Grade colours — semantic, theme-independent ─────────────── */
     :root {
@@ -16,6 +18,7 @@
       --grade-7b:    #fb923c;
       --grade-7c:    #f87171;
       --grade-8a:    #c084fc;
+      --field-h:     2.25rem;
     }
 
     /* ── Corners support ─────────────────────────────────────────── */
@@ -26,36 +29,62 @@
     body { background: var(--color-bg); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
     #logbook-app { max-width: 960px; margin: 0 auto; }
 
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .75rem; margin-bottom: 1.5rem;
+    }
     a.back-link {
       display: inline-flex; align-items: center; gap: .4rem;
       color: var(--color-accent); text-decoration: none;
-      font-size: .9rem; margin-bottom: 1.5rem;
+      font-size: .9rem;
     }
     a.back-link:hover { opacity: .75; }
 
     h1 { font-size: 2rem; font-weight: 700; color: var(--color-accent); margin-bottom: .2rem; }
-    .subtitle { color: var(--color-text-muted); font-size: .9rem; margin-bottom: 1.5rem; }
+    .subtitle { color: var(--color-text-muted); font-size: .9rem; margin-bottom: 1rem; }
 
-    /* ── Stats bar ───────────────────────────────────────────────── */
+    /* ── Admin bar ───────────────────────────────────────────────── */
+    .admin-bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+    .admin-btn {
+      display: inline-flex; align-items: center; gap: .35rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .4rem .8rem;
+      font-size: .82rem; font-weight: 600;
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .admin-btn:hover { border-color: var(--color-accent); }
+    .admin-btn.primary { background: var(--color-accent); color: var(--color-accent-text); border-color: var(--color-accent); }
+    .admin-btn.ghost { color: var(--color-text-muted); }
+
+    /* ── Stats bar (status filter, multi-select) ───────────────────── */
     .stats-bar {
-      display: flex; flex-wrap: wrap; gap: .75rem;
+      display: flex; flex-wrap: wrap; gap: .5rem;
       margin-bottom: 1.25rem;
     }
     .stat-pill {
-      display: flex; align-items: center; gap: .4rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .2rem;
+      min-width: 4.5rem;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: calc(var(--r) * 2);
-      padding: .35rem .75rem;
-      font-size: .82rem;
+      border-radius: var(--r);
+      padding: .5rem .6rem;
       cursor: pointer;
       transition: border-color .15s, background .15s;
       user-select: none;
     }
     .stat-pill:hover { border-color: var(--color-accent); }
     .stat-pill.active { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); }
-    .stat-pill .count { font-weight: 700; color: var(--color-text); }
-    .stat-pill .label { color: var(--color-text-muted); }
+    .stat-pill .stat-icon { font-size: 1.4rem; line-height: 1; display: flex; }
+    .stat-pill .stat-text { display: flex; align-items: baseline; gap: .3rem; }
+    .stat-pill .count { font-weight: 700; color: var(--color-text); font-size: .85rem; }
+    .stat-pill .label {
+      color: var(--color-text-muted); font-size: .62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .03em;
+    }
 
     /* ── Controls ────────────────────────────────────────────────── */
     .controls {
@@ -81,7 +110,7 @@
     .type-btn.active { background: var(--color-accent); color: var(--color-accent-text); }
 
     .search-box {
-      flex: 1; min-width: 160px;
+      flex: 0 1 220px; min-width: 140px;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--r);
@@ -148,6 +177,7 @@
     tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent); }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: color-mix(in srgb, var(--color-accent) 4%, var(--color-surface)); }
+    tbody tr.pending-row { background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface)); }
     td { padding: .35rem .65rem; vertical-align: middle; }
 
     /* ── Grade badge ─────────────────────────────────────────────── */
@@ -162,7 +192,11 @@
     /* ── Status icon ─────────────────────────────────────────────── */
     .status-icon { display: inline-flex; cursor: default; }
     .status-icon svg { width: 1.4rem; height: 1.4rem; }
-    .stat-pill svg { width: 1.3rem; height: 1.3rem; display: block; }
+    .stat-pill .stat-icon svg { width: 1.4rem; height: 1.4rem; display: block; }
+    .pending-badge {
+      font-size: .68rem; font-weight: 700; color: var(--color-accent);
+      white-space: nowrap;
+    }
 
     /* ── Type text ───────────────────────────────────────────────── */
     .type-text { font-size: .82rem; color: var(--color-text-muted); }
@@ -179,6 +213,14 @@
 
     /* ── Notes tooltip ───────────────────────────────────────────── */
     .notes-icon { cursor: help; color: var(--color-text-muted); font-size: .9rem; }
+
+    /* ── Edit button ─────────────────────────────────────────────── */
+    .edit-btn {
+      border: none; background: none; cursor: pointer;
+      color: var(--color-text-muted); display: inline-flex; padding: .2rem;
+    }
+    .edit-btn:hover { color: var(--color-accent); }
+    .edit-btn svg { width: .95rem; height: .95rem; stroke: currentColor; fill: none; }
 
     /* ── Empty state ─────────────────────────────────────────────── */
     .empty-row td {
@@ -212,6 +254,232 @@
       h1 { font-size: 1.5rem; }
       .place-meta { display: none; }
     }
+
+    /* ══ Modal ══════════════════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: color-mix(in srgb, black 60%, transparent);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 1.5rem 1rem; overflow-y: auto;
+    }
+    .modal-overlay[hidden] { display: none; }
+    .modal-panel {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: 1.25rem; width: 100%; max-width: 460px;
+    }
+    .modal-panel-sm { max-width: 320px; }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .modal-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--color-accent); }
+    .modal-close {
+      border: none; background: none; cursor: pointer;
+      color: var(--color-text-muted); font-size: 1.1rem; line-height: 1; padding: .2rem;
+    }
+    .modal-close:hover { color: var(--color-text); }
+
+    /* ── Section labels ────────────────────────────────────────────────── */
+    .section-label {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--color-text-muted);
+      margin: 1.1rem 0 .5rem;
+    }
+    .section-label:first-child { margin-top: 0; }
+    .sub-label {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--color-text-muted);
+      margin-bottom: .5rem;
+    }
+
+    /* ── Form fields ───────────────────────────────────────────────────── */
+    .field { margin-bottom: .75rem; }
+    .form-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: .75rem; }
+    .form-row .field { flex: 1; min-width: 0; margin-bottom: 0; }
+
+    #entry-form input[type="text"], #entry-form input[type="url"] {
+      width: 100%; box-sizing: border-box;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .65rem .85rem;
+      color: var(--color-text);
+      font-size: 1rem;
+      outline: none;
+    }
+    #entry-form input[type="text"]:focus, #entry-form input[type="url"]:focus { border-color: var(--color-accent); }
+
+    #entry-form textarea {
+      width: 100%; box-sizing: border-box;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .65rem .85rem;
+      color: var(--color-text);
+      font-size: 1rem;
+      outline: none; resize: vertical; min-height: 72px;
+    }
+    #entry-form textarea:focus { border-color: var(--color-accent); }
+
+    #login-key {
+      width: 100%; box-sizing: border-box;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .65rem .85rem;
+      color: var(--color-text);
+      font-size: 1rem;
+      outline: none;
+    }
+    #login-key:focus { border-color: var(--color-accent); }
+
+    /* ── Segmented toggle bar (type, status) ────────────────────────────── */
+    .toggle-bar {
+      display: flex; flex-wrap: wrap;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: .75rem;
+    }
+    .toggle-btn {
+      flex: 1 0 auto;
+      box-sizing: border-box;
+      border: none;
+      border-right: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      font-size: .78rem; font-weight: 600;
+      padding: .5rem .6rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s, color .12s;
+    }
+    .toggle-btn:last-child { border-right: none; }
+    .toggle-btn:hover { color: var(--color-text); }
+    .toggle-btn.active {
+      background: var(--color-accent);
+      color: var(--color-accent-text);
+    }
+
+    #type-group {
+      flex: 1 1 9rem;
+      min-width: 0;
+      height: var(--field-h);
+      margin-bottom: 0;
+    }
+    #type-group .toggle-btn {
+      flex: 1 1 0;
+      min-width: 4rem;
+      height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+    }
+
+    #status-group { display: inline-flex; flex-wrap: nowrap; width: auto; }
+    #status-group .toggle-btn {
+      flex: 0 0 auto;
+      min-width: 4.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .15rem;
+      padding: .45rem .3rem;
+    }
+    .form-status-icon { display: flex; }
+    .form-status-icon svg { width: 1.5rem; height: 1.5rem; }
+    .status-label {
+      font-size: .58rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    /* ── Grade picker ──────────────────────────────────────────────────── */
+    .grade-picker {
+      flex: 1 1 9rem;
+      min-width: 0;
+      height: var(--field-h);
+      display: flex; align-items: stretch; gap: .5rem;
+    }
+    .grade-step {
+      flex: 0 0 var(--field-h);
+      box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .grade-step svg { width: .8rem; height: .8rem; fill: currentColor; }
+    .grade-step:hover { border-color: var(--color-accent); }
+    .grade-step:active { transform: scale(.94); }
+
+    #grade-select {
+      box-sizing: border-box;
+      flex: 1;
+      min-width: 0;
+      height: var(--field-h);
+      border: 1px solid currentColor;
+      border-radius: var(--r);
+      background: color-mix(in srgb, currentColor 25%, var(--color-surface));
+      color: var(--color-text);
+      font-size: .85rem; font-weight: 700; font-family: monospace;
+      text-align: center; text-align-last: center;
+      padding: 0 .4rem;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    #grade-select option {
+      font-family: monospace; font-weight: 700;
+      background: var(--color-surface); color: var(--color-text);
+    }
+
+    /* ── Date input ────────────────────────────────────────────────────── */
+    .date-row { display: flex; align-items: stretch; gap: .5rem; }
+    #entry-form .date-row input#entry-date { width: 8.5rem; flex: 0 0 auto; }
+    .date-picker-btn {
+      flex: 0 0 2.75rem;
+      box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .date-picker-btn svg { width: 1.1rem; height: 1.1rem; stroke: currentColor; }
+    .date-picker-btn:hover { border-color: var(--color-accent); }
+    .date-native {
+      position: absolute; width: 1px; height: 1px;
+      opacity: 0; pointer-events: none;
+    }
+    .date-hint { font-size: .75rem; color: var(--color-text-muted); margin-top: .3rem; }
+
+    /* ── Submit ────────────────────────────────────────────────────────── */
+    .submit-btn {
+      width: 100%; margin-top: 1rem;
+      background: var(--color-accent); color: var(--color-accent-text);
+      border: none; border-radius: var(--r);
+      padding: .9rem; font-size: 1rem; font-weight: 700;
+      cursor: pointer;
+    }
+    .submit-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Message ───────────────────────────────────────────────────────── */
+    .msg {
+      margin-top: .85rem; padding: .75rem 1rem;
+      border-radius: var(--r); font-size: .9rem; display: none;
+    }
+    .msg.success {
+      background: color-mix(in srgb, #4ade80 12%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, #4ade80 40%, transparent);
+      display: block;
+    }
+    .msg.error {
+      background: color-mix(in srgb, #f87171 12%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -219,24 +487,145 @@
   <div id="loading"><div class="spinner"></div><span>Loading logbook…</span></div>
   <div id="app" style="display:none">
 
-    <a href="/" class="back-link">← Back</a>
+    <div class="page-header">
+      <a href="/" class="back-link">← Back</a>
+      <button type="button" class="admin-btn" id="login-toggle-btn">Log in</button>
+    </div>
     <h1>Climbing Logbook</h1>
     <p class="subtitle" id="subtitle"></p>
+
+    <div class="admin-bar" id="admin-bar">
+      <button type="button" class="admin-btn primary" id="add-btn" hidden>+ Add entry</button>
+      <button type="button" class="admin-btn" id="sync-btn" hidden>Sync</button>
+    </div>
 
     <div class="stats-bar" id="stats-bar"></div>
 
     <div class="controls">
+      <input class="search-box" id="search" placeholder="Search problems…" autocomplete="off">
       <div class="type-toggle" id="type-toggle">
         <button class="type-btn active" data-type="all">All</button>
         <button class="type-btn" data-type="boulder">Boulder</button>
         <button class="type-btn" data-type="lead">Lead</button>
       </div>
-      <input class="search-box" id="search" placeholder="Search problems…" autocomplete="off">
     </div>
 
     <div id="sections"></div>
 
     <div class="footer" id="footer"></div>
+  </div>
+</div>
+
+<!-- ══ Login modal ═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="login-overlay" hidden>
+  <div class="modal-panel modal-panel-sm">
+    <div class="modal-header">
+      <h2>Log in</h2>
+      <button type="button" class="modal-close" id="login-close" aria-label="Close">✕</button>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <div class="field">
+        <input type="password" id="login-key" placeholder="Admin key" autocomplete="current-password">
+      </div>
+      <button type="submit" class="submit-btn" id="login-submit">Log in</button>
+      <div class="msg" id="login-msg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ══ Add / edit entry modal ════════════════════════════════════════ -->
+<div class="modal-overlay" id="entry-overlay" hidden>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 id="entry-modal-title">Add entry</h2>
+      <button type="button" class="modal-close" id="entry-close" aria-label="Close">✕</button>
+    </div>
+
+    <form id="entry-form" autocomplete="off">
+      <div class="section-label">Problem/route name</div>
+      <div class="field">
+        <input type="text" id="entry-name" required>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <div class="sub-label">Location</div>
+          <input type="text" id="entry-place" list="entry-places-list" required>
+          <datalist id="entry-places-list"></datalist>
+        </div>
+        <div class="field">
+          <div class="sub-label">Area</div>
+          <input type="text" id="entry-area" list="entry-areas-list">
+          <datalist id="entry-areas-list"></datalist>
+        </div>
+      </div>
+
+      <div class="section-label">Grade</div>
+      <div class="form-row">
+        <div class="grade-picker">
+          <button type="button" class="grade-step" id="grade-prev" aria-label="Previous grade">
+            <svg viewBox="0 0 24 24"><polygon points="16 5 6 12 16 19"></polygon></svg>
+          </button>
+          <select id="grade-select"></select>
+          <button type="button" class="grade-step" id="grade-next" aria-label="Next grade">
+            <svg viewBox="0 0 24 24"><polygon points="8 5 18 12 8 19"></polygon></svg>
+          </button>
+        </div>
+        <div class="toggle-bar" id="type-group">
+          <button type="button" class="toggle-btn active" data-value="boulder">Boulder</button>
+          <button type="button" class="toggle-btn" data-value="lead">Lead</button>
+        </div>
+      </div>
+
+      <div class="section-label">Status</div>
+      <div class="toggle-bar" id="status-group">
+        <button type="button" class="toggle-btn" data-value="flash">
+          <span class="form-status-icon" data-icon="flash"></span><span class="status-label">Flash</span>
+        </button>
+        <button type="button" class="toggle-btn active" data-value="send">
+          <span class="form-status-icon" data-icon="send"></span><span class="status-label">Send</span>
+        </button>
+        <button type="button" class="toggle-btn" data-value="project">
+          <span class="form-status-icon" data-icon="project"></span><span class="status-label">Project</span>
+        </button>
+        <button type="button" class="toggle-btn" data-value="wishlist">
+          <span class="form-status-icon" data-icon="wishlist"></span><span class="status-label">Check out</span>
+        </button>
+        <button type="button" class="toggle-btn" data-value="abandoned">
+          <span class="form-status-icon" data-icon="abandoned"></span><span class="status-label">Abandoned</span>
+        </button>
+      </div>
+
+      <div class="section-label">When</div>
+      <div class="field">
+        <div class="date-row">
+          <input type="text" id="entry-date">
+          <button type="button" class="date-picker-btn" id="date-picker-btn" aria-label="Pick a date">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <line x1="8" y1="3" x2="8" y2="7"></line>
+              <line x1="16" y1="3" x2="16" y2="7"></line>
+            </svg>
+          </button>
+          <input type="date" id="date-native" class="date-native" tabindex="-1" aria-hidden="true">
+        </div>
+        <div class="date-hint">YYYY-MM or YYYY-MM-DD</div>
+      </div>
+
+      <div class="section-label">Notes</div>
+      <div class="field">
+        <textarea id="entry-notes"></textarea>
+      </div>
+
+      <div class="section-label">Video URL</div>
+      <div class="field">
+        <input type="url" id="entry-video">
+      </div>
+
+      <button type="submit" class="submit-btn" id="entry-submit-btn">Add to logbook</button>
+      <div class="msg" id="entry-msg"></div>
+    </form>
   </div>
 </div>
 
@@ -247,6 +636,10 @@
 
   // ── Config ───────────────────────────────────────────────────────────
   const DATA_URL = "/api/logbook";
+  const ENTRIES_CACHE_KEY = "logbook_entries_cache";
+  const THEME_CACHE_KEY   = "logbook_theme_cache";
+  const LOGIN_HINT_KEY    = "logbook_logged_in_hint";
+  const QUEUE_KEY         = "logbook_pending_queue";
 
   // ── Place → country map ──────────────────────────────────────────────
   const PLACE_COUNTRY = {
@@ -267,7 +660,7 @@
     "Rocklands":           "🇿🇦 South Africa",
   };
 
-  // ── Grade ordering ───────────────────────────────────────────────────
+  // ── Grade ordering (display) ─────────────────────────────────────────
   const GRADE_ORDER = [
     "3","3+","4","4+","5","5+","5A","5A+","5B","5B+","5C",
     "6A","6A+","6B","6B+","6C","6C+",
@@ -288,6 +681,50 @@
     if (r < 16) return "var(--grade-7b)";
     if (r < 18) return "var(--grade-7c)";
     return "var(--grade-8a)";
+  }
+
+  // ── Grade data (entry form) ───────────────────────────────────────────
+  const BOULDER_GRADES = [
+    { g: "5+",  v: "V0",  c: "var(--grade-easy)" },
+    { g: "5A",  v: "V0",  c: "var(--grade-easy)" },
+    { g: "5B",  v: "V1",  c: "var(--grade-easy)" },
+    { g: "5C",  v: "V2",  c: "var(--grade-easy)" },
+    { g: "6A",  v: "V3",  c: "var(--grade-6a)"   },
+    { g: "6A+", v: "V3",  c: "var(--grade-6a)"   },
+    { g: "6B",  v: "V4",  c: "var(--grade-6b)"   },
+    { g: "6B+", v: "V4",  c: "var(--grade-6b)"   },
+    { g: "6C",  v: "V5",  c: "var(--grade-6c)"   },
+    { g: "6C+", v: "V5",  c: "var(--grade-6c)"   },
+    { g: "7A",  v: "V6",  c: "var(--grade-7a)"   },
+    { g: "7A+", v: "V7",  c: "var(--grade-7a)"   },
+    { g: "7B",  v: "V8",  c: "var(--grade-7b)"   },
+    { g: "7B+", v: "V8",  c: "var(--grade-7b)"   },
+    { g: "7C",  v: "V9",  c: "var(--grade-7c)"   },
+    { g: "7C+", v: "V10", c: "var(--grade-7c)"   },
+    { g: "8A",  v: "V11", c: "var(--grade-8a)"   },
+    { g: "8A+", v: "V12", c: "var(--grade-8a)"   },
+    { g: "8B",  v: "V13", c: "var(--grade-8a)"   },
+    { g: "8B+", v: "V14", c: "var(--grade-8a)"   },
+  ];
+  const LEAD_GRADES = [
+    { g: "5c",  c: "var(--grade-easy)" },
+    { g: "6a",  c: "var(--grade-6a)"   },
+    { g: "6a+", c: "var(--grade-6a)"   },
+    { g: "6b",  c: "var(--grade-6b)"   },
+    { g: "6b+", c: "var(--grade-6b)"   },
+    { g: "6c",  c: "var(--grade-6c)"   },
+    { g: "6c+", c: "var(--grade-6c)"   },
+    { g: "7a",  c: "var(--grade-7a)"   },
+    { g: "7a+", c: "var(--grade-7a)"   },
+    { g: "7b",  c: "var(--grade-7b)"   },
+    { g: "7b+", c: "var(--grade-7b)"   },
+    { g: "7c",  c: "var(--grade-7c)"   },
+    { g: "7c+", c: "var(--grade-7c)"   },
+    { g: "8a",  c: "var(--grade-8a)"   },
+  ];
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
 
   // ── Date helpers ─────────────────────────────────────────────────────
@@ -314,12 +751,12 @@
       return `<span class="status-icon" title="Project">${STATUS_ICONS.project}</span>`;
     if (entry.status === "abandoned")
       return `<span class="status-icon" title="Abandoned">${STATUS_ICONS.abandoned}</span>`;
-    return `<span class="status-icon" title="Wishlist">${STATUS_ICONS.wishlist}</span>`;
+    return `<span class="status-icon" title="Check out">${STATUS_ICONS.wishlist}</span>`;
   }
 
   // ── State ────────────────────────────────────────────────────────────
   const state = {
-    statusFilter: "all",
+    statusFilters: new Set(), // empty = "all"
     typeFilter: "all",
     search: "",
     sortByPlace: {},  // { placeName: { col: "grade", dir: "asc" } }
@@ -330,16 +767,87 @@
     return state.sortByPlace[place] ?? { col: "grade", dir: "asc" };
   }
 
+  let ALL_ENTRIES  = [];
+  let isLoggedIn   = false;
+  let editingId    = null; // null = add mode
+
+  // ── Offline queue ──────────────────────────────────────────────────
+  function getQueue() {
+    try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) ?? []; }
+    catch { return []; }
+  }
+  function setQueue(queue) {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    updateSyncButton();
+  }
+  function applyPendingToEntries() {
+    for (const item of getQueue()) {
+      if (item.op === "add") {
+        if (!ALL_ENTRIES.some(e => e.id === item.entry.id)) {
+          ALL_ENTRIES.push({ ...item.entry, _pending: true });
+        }
+      } else {
+        const idx = ALL_ENTRIES.findIndex(e => e.id === item.entry.id);
+        if (idx !== -1) ALL_ENTRIES[idx] = { ...item.entry, _pending: true };
+      }
+    }
+  }
+  function updateSyncButton() {
+    const n = getQueue().length;
+    syncBtn.hidden = n === 0;
+    syncBtn.textContent = n ? `Sync (${n})` : "Sync";
+  }
+
+  async function syncPending() {
+    const queue = getQueue();
+    if (!queue.length) return;
+    syncBtn.disabled = true;
+
+    const remaining = [];
+    let lastEntries = null;
+    for (const item of queue) {
+      try {
+        const res = await fetch(DATA_URL, {
+          method: item.op === "edit" ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(item.entry),
+        });
+        if (res.status === 401) {
+          remaining.push(item);
+          isLoggedIn = false;
+          updateAdminBar();
+          break;
+        }
+        if (!res.ok) { remaining.push(item); continue; }
+        const data = await res.json();
+        lastEntries = data.entries;
+      } catch {
+        remaining.push(item);
+        break; // still offline — stop, preserve order for next attempt
+      }
+    }
+
+    setQueue(remaining);
+    if (lastEntries) {
+      ALL_ENTRIES = lastEntries;
+      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
+      applyPendingToEntries();
+    }
+    syncBtn.disabled = false;
+    render();
+  }
+
   // ── Data ─────────────────────────────────────────────────────────────
-  let ALL_ENTRIES = [];
+  function entryMatchesStatusFilter(entry, filter) {
+    if (filter === "flash") return entry.status === "send" && entry.flash;
+    return entry.status === filter;
+  }
 
   function filteredEntries() {
     const q = state.search.toLowerCase();
     return ALL_ENTRIES.filter(e => {
-      if (state.statusFilter !== "all") {
-        if (state.statusFilter === "flash" && !(e.status === "send" && e.flash)) return false;
-        if (state.statusFilter !== "flash" && e.status !== state.statusFilter) return false;
-      }
+      if (state.statusFilters.size > 0 &&
+          ![...state.statusFilters].some(f => entryMatchesStatusFilter(e, f))) return false;
       if (state.typeFilter !== "all" && e.type !== state.typeFilter) return false;
       if (q && !e.name.toLowerCase().includes(q) && !(e.area||"").toLowerCase().includes(q)) return false;
       return true;
@@ -385,18 +893,23 @@
       { filter: "flash",     icon: STATUS_ICONS.flash,     label: "Flashes",   count: flashes},
       { filter: "project",   icon: STATUS_ICONS.project,   label: "Projects",  count: proj   },
       { filter: "abandoned", icon: STATUS_ICONS.abandoned, label: "Abandoned", count: aband  },
-      { filter: "wishlist",  icon: STATUS_ICONS.wishlist,  label: "Wishlist",  count: wish   },
+      { filter: "wishlist",  icon: STATUS_ICONS.wishlist,  label: "Check out", count: wish   },
     ];
 
-    document.getElementById("stats-bar").innerHTML = pills.map(p =>
-      `<button class="stat-pill${state.statusFilter === p.filter ? " active" : ""}"
+    document.getElementById("stats-bar").innerHTML = pills.map(p => {
+      const isActive = p.filter === "all"
+        ? state.statusFilters.size === 0
+        : state.statusFilters.has(p.filter);
+      return `<button class="stat-pill${isActive ? " active" : ""}"
          data-filter="${p.filter}">
-        <span>${p.icon}</span>
-        <span class="count">${p.count}</span>
-        <span class="label">${p.label}</span>
-      </button>`
+        <span class="stat-icon">${p.icon}</span>
+        <span class="stat-text"><span class="count">${p.count}</span><span class="label">${p.label}</span></span>
+      </button>`;
+    }
     ).join("");
   }
+
+  const EDIT_ICON = `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>`;
 
   function renderSections(entries) {
     const container = document.getElementById("sections");
@@ -417,17 +930,19 @@
       const thClass = (c) => c !== col ? `sortable` : `sortable sort-${dir}`;
 
       const rows = sorted.map(e => `
-        <tr>
+        <tr${e._pending ? ` class="pending-row"` : ""}>
           <td style="text-align:center;width:2rem">${statusBadge(e)}</td>
           <td><span class="grade-badge" style="color:${gradeColor(e.grade)}">${e.grade}</span></td>
           <td>
             <span style="font-weight:500">${e.name}</span>
             ${e.notes ? `<span class="notes-icon" title="${e.notes.replace(/"/g,'&quot;')}"> ℹ</span>` : ""}
+            ${e._pending ? `<span class="pending-badge"> · pending sync</span>` : ""}
           </td>
           <td class="area-tag">${e.area}</td>
           <td class="type-text">${e.type}</td>
           <td style="color:var(--color-text-muted);font-size:.82rem;white-space:nowrap">${formatDate(e.date)}</td>
           <td style="text-align:center;width:2rem">${e.video ? `<a class="video-link" href="${e.video}" target="_blank" rel="noopener" title="Watch video">▶</a>` : ""}</td>
+          <td style="text-align:center;width:2rem">${isLoggedIn ? `<button type="button" class="edit-btn" data-edit-id="${e.id}" aria-label="Edit">${EDIT_ICON}</button>` : ""}</td>
         </tr>
       `).join("");
 
@@ -455,10 +970,11 @@
                     Date <i class="sort-icon"></i>
                   </th>
                   <th style="width:2rem"></th>
+                  <th style="width:2rem"></th>
                 </tr>
               </thead>
               <tbody>
-                ${rows || `<tr class="empty-row"><td colspan="7">No problems match.</td></tr>`}
+                ${rows || `<tr class="empty-row"><td colspan="8">No problems match.</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -471,6 +987,7 @@
     renderStats(ALL_ENTRIES);
     renderSections(entries);
     updateSubtitle(entries);
+    updateAdminBar();
   }
 
   function updateSubtitle(entries) {
@@ -481,21 +998,331 @@
     document.getElementById("footer").textContent = "";
   }
 
-  // ── Event delegation ─────────────────────────────────────────────────
+  // ── DOM refs ─────────────────────────────────────────────────────────
+  const loginToggleBtn = document.getElementById("login-toggle-btn");
+  const addBtn      = document.getElementById("add-btn");
+  const syncBtn     = document.getElementById("sync-btn");
+
+  const loginOverlay = document.getElementById("login-overlay");
+  const loginForm     = document.getElementById("login-form");
+  const loginKeyInput = document.getElementById("login-key");
+  const loginMsg       = document.getElementById("login-msg");
+  const loginSubmitBtn = document.getElementById("login-submit");
+
+  const entryOverlay   = document.getElementById("entry-overlay");
+  const entryForm      = document.getElementById("entry-form");
+  const entryModalTitle= document.getElementById("entry-modal-title");
+  const nameInput  = document.getElementById("entry-name");
+  const placeInput = document.getElementById("entry-place");
+  const areaInput  = document.getElementById("entry-area");
+  const notesInput = document.getElementById("entry-notes");
+  const videoInput = document.getElementById("entry-video");
+  const gradeSelect = document.getElementById("grade-select");
+  const gradePrev   = document.getElementById("grade-prev");
+  const gradeNext   = document.getElementById("grade-next");
+  const dateInput  = document.getElementById("entry-date");
+  const dateNative = document.getElementById("date-native");
+  const datePickerBtn = document.getElementById("date-picker-btn");
+  const entrySubmitBtn = document.getElementById("entry-submit-btn");
+  const entryMsg      = document.getElementById("entry-msg");
+
+  // ── Admin bar ────────────────────────────────────────────────────────
+  function updateAdminBar() {
+    loginToggleBtn.textContent = isLoggedIn ? "Log out" : "Log in";
+    addBtn.hidden = !isLoggedIn;
+    updateSyncButton();
+  }
+
+  async function checkSession() {
+    try {
+      const res = await fetch("/api/session");
+      const data = await res.json();
+      isLoggedIn = !!data.loggedIn;
+      localStorage.setItem(LOGIN_HINT_KEY, isLoggedIn ? "1" : "0");
+    } catch {
+      // Offline — fall back to the last known login state so the UI
+      // still shows edit affordances; writes still get verified for
+      // real by the session cookie once synced.
+      isLoggedIn = localStorage.getItem(LOGIN_HINT_KEY) === "1";
+    }
+  }
+
+  loginToggleBtn.addEventListener("click", async () => {
+    if (isLoggedIn) {
+      try { await fetch("/api/login", { method: "DELETE" }); } catch {}
+      isLoggedIn = false;
+      localStorage.setItem(LOGIN_HINT_KEY, "0");
+      render();
+      return;
+    }
+    loginKeyInput.value = "";
+    loginMsg.className = "msg";
+    loginOverlay.hidden = false;
+    loginKeyInput.focus();
+  });
+  document.getElementById("login-close").addEventListener("click", () => loginOverlay.hidden = true);
+  loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) loginOverlay.hidden = true; });
+
+  loginForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    loginSubmitBtn.disabled = true;
+    loginMsg.className = "msg";
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: loginKeyInput.value }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        loginMsg.textContent = data.error ?? "Login failed";
+        loginMsg.className = "msg error";
+      } else {
+        isLoggedIn = true;
+        localStorage.setItem(LOGIN_HINT_KEY, "1");
+        loginOverlay.hidden = true;
+        render();
+      }
+    } catch (err) {
+      loginMsg.textContent = `Network error: ${err.message}`;
+      loginMsg.className = "msg error";
+    }
+    loginSubmitBtn.disabled = false;
+  });
+
+  syncBtn.addEventListener("click", syncPending);
+
+  // ── Entry form: place/area lookup ───────────────────────────────────
+  function populatePlaces() {
+    const places = [...new Set(ALL_ENTRIES.map(e => e.place))].sort();
+    document.getElementById("entry-places-list").innerHTML =
+      places.map(p => `<option value="${p}">`).join("");
+  }
+  function populateAreas(place) {
+    const areas = [...new Set(
+      ALL_ENTRIES.filter(e => (!place || e.place === place) && e.area).map(e => e.area)
+    )].sort();
+    document.getElementById("entry-areas-list").innerHTML =
+      areas.map(a => `<option value="${a}">`).join("");
+  }
+  // A known area implies its place — auto-fill Location from Area when
+  // it exactly matches an area we've already logged somewhere.
+  function findPlaceForArea(area) {
+    const match = ALL_ENTRIES.find(e => (e.area || "").toLowerCase() === area.toLowerCase());
+    return match?.place ?? null;
+  }
+  placeInput.addEventListener("input", () => populateAreas(placeInput.value.trim()));
+  areaInput.addEventListener("focus", () => populateAreas(placeInput.value.trim()));
+  areaInput.addEventListener("input", () => {
+    const area = areaInput.value.trim();
+    populateAreas(placeInput.value.trim());
+    if (!placeInput.value.trim() && area) {
+      const place = findPlaceForArea(area);
+      if (place) placeInput.value = place;
+    }
+  });
+
+  // ── Entry form: type toggle ─────────────────────────────────────────
+  let selectedType = "boulder";
+  document.getElementById("type-group").addEventListener("click", e => {
+    const btn = e.target.closest(".toggle-btn");
+    if (!btn) return;
+    selectedType = btn.dataset.value;
+    document.querySelectorAll("#type-group .toggle-btn").forEach(b =>
+      b.classList.toggle("active", b === btn));
+    renderGradeOptions();
+    selectGradeByIndex(0);
+  });
+
+  // ── Entry form: grade picker (dropdown + prev/next) ──────────────────
+  let selectedGrade = "";
+  function currentGrades() {
+    return selectedType === "boulder" ? BOULDER_GRADES : LEAD_GRADES;
+  }
+  function renderGradeOptions() {
+    const boulder = selectedType === "boulder";
+    gradeSelect.innerHTML = currentGrades()
+      .map(({ g, v }) => `<option value="${g}">${boulder ? `${g}/${v}` : g}</option>`)
+      .join("");
+  }
+  function selectGradeByIndex(index) {
+    const grades = currentGrades();
+    const wrapped = ((index % grades.length) + grades.length) % grades.length;
+    const { g, c } = grades[wrapped];
+    selectedGrade = g;
+    gradeSelect.value = g;
+    gradeSelect.style.color = c;
+  }
+  function selectGradeByValue(value, type) {
+    const grades = type === "boulder" ? BOULDER_GRADES : LEAD_GRADES;
+    const idx = grades.findIndex(({ g }) => g.toUpperCase() === String(value).toUpperCase());
+    selectGradeByIndex(idx === -1 ? 0 : idx);
+  }
+  function currentGradeIndex() {
+    const idx = currentGrades().findIndex(({ g }) => g === selectedGrade);
+    return idx === -1 ? 0 : idx;
+  }
+  gradeSelect.addEventListener("change", () => selectGradeByIndex(
+    currentGrades().findIndex(({ g }) => g === gradeSelect.value)
+  ));
+  gradePrev.addEventListener("click", () => selectGradeByIndex(currentGradeIndex() - 1));
+  gradeNext.addEventListener("click", () => selectGradeByIndex(currentGradeIndex() + 1));
+
+  // ── Entry form: status toggle (Flash = status send, flash=true) ─────
+  let selectedStatus = "send";
+  let isFlash = false;
+  document.getElementById("status-group").addEventListener("click", e => {
+    const btn = e.target.closest(".toggle-btn");
+    if (!btn) return;
+    const value = btn.dataset.value;
+    selectedStatus = value === "flash" ? "send" : value;
+    isFlash = value === "flash";
+    document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
+      b.classList.toggle("active", b === btn));
+  });
+  document.querySelectorAll("#status-group .form-status-icon[data-icon]").forEach(el => {
+    el.innerHTML = STATUS_ICONS[el.dataset.icon];
+  });
+
+  function setStatusToggle(status, flash) {
+    const value = flash ? "flash" : status;
+    document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
+      b.classList.toggle("active", b.dataset.value === value));
+    selectedStatus = status;
+    isFlash = flash;
+  }
+  function setTypeToggle(type) {
+    selectedType = type;
+    document.querySelectorAll("#type-group .toggle-btn").forEach(b =>
+      b.classList.toggle("active", b.dataset.value === type));
+    renderGradeOptions();
+  }
+
+  // ── Entry form: date picker ──────────────────────────────────────────
+  datePickerBtn.addEventListener("click", () => {
+    const current = dateInput.value.trim();
+    dateNative.value = /^\d{4}-\d{2}-\d{2}$/.test(current)
+      ? current
+      : /^\d{4}-\d{2}$/.test(current)
+        ? `${current}-01`
+        : new Date().toISOString().slice(0, 10);
+    if (dateNative.showPicker) dateNative.showPicker();
+    else dateNative.focus();
+  });
+  dateNative.addEventListener("change", () => {
+    if (dateNative.value) dateInput.value = dateNative.value;
+  });
+
+  // ── Entry modal: open/close ──────────────────────────────────────────
+  function openEntryModal(entry) {
+    editingId = entry?.id ?? null;
+    entryModalTitle.textContent = editingId ? "Edit entry" : "Add entry";
+    entrySubmitBtn.textContent = editingId ? "Save changes" : "Add to logbook";
+    entryMsg.className = "msg";
+
+    nameInput.value  = entry?.name  ?? "";
+    placeInput.value = entry?.place ?? "";
+    areaInput.value  = entry?.area  ?? "";
+    notesInput.value = entry?.notes ?? "";
+    videoInput.value = entry?.video ?? "";
+    dateInput.value  = entry?.date  ?? new Date().toISOString().slice(0, 10);
+
+    setTypeToggle(entry?.type ?? "boulder");
+    if (entry) selectGradeByValue(entry.grade, entry.type);
+    else selectGradeByIndex(0);
+    setStatusToggle(entry?.status ?? "send", Boolean(entry?.flash));
+
+    populatePlaces();
+    populateAreas(placeInput.value.trim());
+
+    entryOverlay.hidden = false;
+  }
+  addBtn.addEventListener("click", () => openEntryModal(null));
+  document.getElementById("entry-close").addEventListener("click", () => entryOverlay.hidden = true);
+  entryOverlay.addEventListener("click", e => { if (e.target === entryOverlay) entryOverlay.hidden = true; });
+
+  document.addEventListener("click", e => {
+    const editBtn = e.target.closest(".edit-btn");
+    if (!editBtn) return;
+    const entry = ALL_ENTRIES.find(x => x.id === editBtn.dataset.editId);
+    if (entry) openEntryModal(entry);
+  });
+
+  // ── Entry form: submit (online → API, offline → queue) ──────────────
+  entryForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    entrySubmitBtn.disabled = true;
+    entryMsg.className = "msg";
+
+    const place = placeInput.value.trim();
+    const name  = nameInput.value.trim();
+    const entry = {
+      id:     editingId ?? `${slugify(place)}-${slugify(name)}`,
+      place,
+      area:   areaInput.value.trim(),
+      name,
+      grade:  selectedGrade,
+      type:   selectedType,
+      status: selectedStatus,
+      flash:  isFlash,
+      date:   dateInput.value.trim() || null,
+      notes:  notesInput.value.trim() || null,
+      video:  videoInput.value.trim() || null,
+    };
+    const op = editingId ? "edit" : "add";
+
+    try {
+      const res = await fetch(DATA_URL, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        entryMsg.textContent = data.error ?? `Error ${res.status}`;
+        entryMsg.className = "msg error";
+        entrySubmitBtn.disabled = false;
+        return;
+      }
+      ALL_ENTRIES = data.entries;
+      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
+      applyPendingToEntries();
+      entryOverlay.hidden = true;
+      render();
+    } catch (err) {
+      // Offline (or server unreachable) — queue for later sync, and
+      // reflect the change locally so it shows up right away.
+      const queue = getQueue();
+      const existingIdx = queue.findIndex(item => item.entry.id === entry.id);
+      if (existingIdx !== -1) queue[existingIdx] = { op: queue[existingIdx].op, entry };
+      else queue.push({ op, entry });
+      setQueue(queue);
+      applyPendingToEntries();
+      entryOverlay.hidden = true;
+      render();
+    }
+
+    entrySubmitBtn.disabled = false;
+  });
+
+  // ── Event delegation (list controls) ─────────────────────────────────
   document.addEventListener("click", e => {
     // Status filter pills
     const pill = e.target.closest(".stat-pill");
     if (pill) {
-      state.statusFilter = pill.dataset.filter;
+      const filter = pill.dataset.filter;
+      if (filter === "all") state.statusFilters.clear();
+      else if (state.statusFilters.has(filter)) state.statusFilters.delete(filter);
+      else state.statusFilters.add(filter);
       render();
       return;
     }
 
-    // Type toggle
-    const typeBtn = e.target.closest(".type-btn");
+    // Type toggle (filter, not entry form)
+    const typeBtn = e.target.closest("#type-toggle .type-btn");
     if (typeBtn) {
       state.typeFilter = typeBtn.dataset.type;
-      document.querySelectorAll(".type-btn").forEach(b =>
+      document.querySelectorAll("#type-toggle .type-btn").forEach(b =>
         b.classList.toggle("active", b.dataset.type === state.typeFilter));
       render();
       return;
@@ -529,8 +1356,16 @@
     render();
   });
 
+  // ── PWA: service worker ──────────────────────────────────────────────
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+
   // ── Boot ─────────────────────────────────────────────────────────────
   async function boot() {
+    renderGradeOptions();
+    selectGradeByIndex(0);
+
     // Apply theme first (silent fail → page still works)
     try {
       const cfgRes = await fetch("../config.yaml");
@@ -538,20 +1373,37 @@
         const config = load(await cfgRes.text());
         const theme  = await loadTheme(config.theme, "../");
         applyTheme(theme);
+        localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(theme));
       }
-    } catch { /* theme load failed — proceed with defaults */ }
+    } catch {
+      const cached = localStorage.getItem(THEME_CACHE_KEY);
+      if (cached) {
+        try { applyTheme(JSON.parse(cached)); } catch {}
+      }
+    }
 
-    // Load data
+    const sessionPromise = checkSession();
+
+    // Load data (fall back to last-cached entries when offline)
     try {
       const res = await fetch(DATA_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       ALL_ENTRIES = data.entries ?? [];
+      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
     } catch (err) {
-      document.getElementById("loading").innerHTML =
-        `<div class="error-box"><strong>Failed to load logbook data</strong><br>${err.message}</div>`;
-      return;
+      const cached = localStorage.getItem(ENTRIES_CACHE_KEY);
+      if (cached) {
+        try { ALL_ENTRIES = JSON.parse(cached); } catch { ALL_ENTRIES = []; }
+      } else {
+        document.getElementById("loading").innerHTML =
+          `<div class="error-box"><strong>Failed to load logbook data</strong><br>${err.message}</div>`;
+        return;
+      }
     }
+    applyPendingToEntries();
+
+    await sessionPromise;
 
     document.getElementById("loading").style.display = "none";
     document.getElementById("app").style.display = "";

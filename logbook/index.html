@@ -58,33 +58,7 @@
     .admin-btn:hover { border-color: var(--color-accent); }
     .admin-btn.primary { background: var(--color-accent); color: var(--color-accent-text); border-color: var(--color-accent); }
     .admin-btn.ghost { color: var(--color-text-muted); }
-
-    /* ── Stats bar (status filter, multi-select) ───────────────────── */
-    .stats-bar {
-      display: flex; flex-wrap: wrap; gap: .5rem;
-      margin-bottom: 1.25rem;
-    }
-    .stat-pill {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: .2rem;
-      min-width: 4.5rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--r);
-      padding: .5rem .6rem;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      user-select: none;
-    }
-    .stat-pill:hover { border-color: var(--color-accent); }
-    .stat-pill.active { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); }
-    .stat-pill .stat-icon { font-size: 1.4rem; line-height: 1; display: flex; }
-    .stat-pill .stat-text { display: flex; align-items: baseline; gap: .3rem; }
-    .stat-pill .count { font-weight: 700; color: var(--color-text); font-size: .85rem; }
-    .stat-pill .label {
-      color: var(--color-text-muted); font-size: .62rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .03em;
-    }
+    .admin-btn svg { width: 1rem; height: 1rem; stroke: currentColor; fill: none; flex: 0 0 auto; }
 
     /* ── Controls ────────────────────────────────────────────────── */
     .controls {
@@ -121,6 +95,53 @@
     }
     .search-box::placeholder { color: var(--color-text-muted); }
     .search-box:focus { border-color: var(--color-accent); }
+
+    /* ── Filter popover ──────────────────────────────────────────── */
+    .filter-wrap { position: relative; }
+    .filter-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 2.25rem; height: 2.25rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+    .filter-btn:hover { border-color: var(--color-accent); }
+    .filter-btn.active { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); color: var(--color-accent); }
+    .filter-btn svg { width: 1.1rem; height: 1.1rem; stroke: currentColor; fill: none; }
+
+    .filter-panel {
+      position: absolute; top: calc(100% + .4rem); left: 0; z-index: 20;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r);
+      padding: .9rem;
+      min-width: 260px;
+      box-shadow: 0 8px 24px color-mix(in srgb, black 35%, transparent);
+    }
+    .filter-panel[hidden] { display: none; }
+    .filter-section-label {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--color-text-muted);
+      margin: 0 0 .4rem;
+    }
+    .filter-section-label:not(:first-child) { margin-top: .9rem; }
+    #filter-status-group { flex-wrap: wrap; margin-bottom: 0; }
+    #filter-status-group .toggle-btn {
+      flex: 0 0 auto;
+      min-width: 4rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .15rem;
+      padding: .4rem .3rem;
+    }
+    .filter-clear-btn {
+      display: block; width: 100%; margin-top: .9rem;
+      background: none; border: none;
+      color: var(--color-text-muted); font-size: .78rem; text-decoration: underline;
+      cursor: pointer; text-align: center;
+    }
+    .filter-clear-btn:hover { color: var(--color-text); }
 
     /* ── Place sections ──────────────────────────────────────────── */
     .place-section {
@@ -192,7 +213,6 @@
     /* ── Status icon ─────────────────────────────────────────────── */
     .status-icon { display: inline-flex; cursor: default; }
     .status-icon svg { width: 1.4rem; height: 1.4rem; }
-    .stat-pill .stat-icon svg { width: 1.4rem; height: 1.4rem; display: block; }
     .pending-badge {
       font-size: .68rem; font-weight: 700; color: var(--color-accent);
       white-space: nowrap;
@@ -505,18 +525,49 @@
     <p class="subtitle" id="subtitle"></p>
 
     <div class="admin-bar" id="admin-bar">
-      <button type="button" class="admin-btn primary" id="add-btn" hidden>+ Add entry</button>
-      <button type="button" class="admin-btn" id="sync-btn" hidden>Sync</button>
+      <button type="button" class="admin-btn primary" id="add-btn" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+        <span>Add entry</span>
+      </button>
+      <button type="button" class="admin-btn" id="sync-btn" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 3-3 3 3"></path><path d="M13 18H7a2 2 0 0 1-2-2V6"></path><path d="m22 15-3 3-3-3"></path><path d="M11 6h6a2 2 0 0 1 2 2v10"></path></svg>
+        <span id="sync-btn-label">Sync</span>
+      </button>
     </div>
-
-    <div class="stats-bar" id="stats-bar"></div>
 
     <div class="controls">
       <input class="search-box" id="search" placeholder="Search problems…" autocomplete="off">
-      <div class="type-toggle" id="type-toggle">
-        <button class="type-btn active" data-type="all">All</button>
-        <button class="type-btn" data-type="boulder">Boulder</button>
-        <button class="type-btn" data-type="lead">Lead</button>
+      <div class="filter-wrap">
+        <button type="button" class="filter-btn" id="filter-btn" aria-label="Filter" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path></svg>
+        </button>
+        <div class="filter-panel" id="filter-panel" hidden>
+          <div class="filter-section-label">Type</div>
+          <div class="type-toggle" id="type-toggle">
+            <button class="type-btn active" data-type="all">All</button>
+            <button class="type-btn" data-type="boulder">Boulder</button>
+            <button class="type-btn" data-type="lead">Lead</button>
+          </div>
+          <div class="filter-section-label">Status</div>
+          <div class="toggle-bar" id="filter-status-group">
+            <button type="button" class="toggle-btn" data-filter="flash">
+              <span class="form-status-icon" data-icon="flash"></span><span class="status-label">Flash</span>
+            </button>
+            <button type="button" class="toggle-btn" data-filter="send">
+              <span class="form-status-icon" data-icon="send"></span><span class="status-label">Send</span>
+            </button>
+            <button type="button" class="toggle-btn" data-filter="project">
+              <span class="form-status-icon" data-icon="project"></span><span class="status-label">Project</span>
+            </button>
+            <button type="button" class="toggle-btn" data-filter="wishlist">
+              <span class="form-status-icon" data-icon="wishlist"></span><span class="status-label">Check out</span>
+            </button>
+            <button type="button" class="toggle-btn" data-filter="abandoned">
+              <span class="form-status-icon" data-icon="abandoned"></span><span class="status-label">Abandoned</span>
+            </button>
+          </div>
+          <button type="button" class="filter-clear-btn" id="filter-clear-btn">Clear filters</button>
+        </div>
       </div>
     </div>
 
@@ -808,7 +859,7 @@
   function updateSyncButton() {
     const n = getQueue().length;
     syncBtn.hidden = n === 0;
-    syncBtn.textContent = n ? `Sync (${n})` : "Sync";
+    syncBtnLabel.textContent = n ? `Sync (${n})` : "Sync";
   }
 
   async function syncPending() {
@@ -894,37 +945,16 @@
   }
 
   // ── Render ───────────────────────────────────────────────────────────
-  function renderStats(entries) {
-    const all    = ALL_ENTRIES.length;
-    const sends  = ALL_ENTRIES.filter(e => e.status === "send" && !e.flash).length;
-    const flashes= ALL_ENTRIES.filter(e => e.status === "send" && e.flash).length;
-    const proj   = ALL_ENTRIES.filter(e => e.status === "project").length;
-    const aband  = ALL_ENTRIES.filter(e => e.status === "abandoned").length;
-    const wish   = ALL_ENTRIES.filter(e => e.status === "wishlist").length;
-
-    const pills = [
-      { filter: "all",       icon: "🧗",                  label: "All",       count: all    },
-      { filter: "send",      icon: STATUS_ICONS.send,      label: "Sends",     count: sends  },
-      { filter: "flash",     icon: STATUS_ICONS.flash,     label: "Flashes",   count: flashes},
-      { filter: "project",   icon: STATUS_ICONS.project,   label: "Projects",  count: proj   },
-      { filter: "abandoned", icon: STATUS_ICONS.abandoned, label: "Abandoned", count: aband  },
-      { filter: "wishlist",  icon: STATUS_ICONS.wishlist,  label: "Check out", count: wish   },
-    ];
-
-    document.getElementById("stats-bar").innerHTML = pills.map(p => {
-      const isActive = p.filter === "all"
-        ? state.statusFilters.size === 0
-        : state.statusFilters.has(p.filter);
-      return `<button class="stat-pill${isActive ? " active" : ""}"
-         data-filter="${p.filter}">
-        <span class="stat-icon">${p.icon}</span>
-        <span class="stat-text"><span class="count">${p.count}</span><span class="label">${p.label}</span></span>
-      </button>`;
-    }
-    ).join("");
+  function updateFilterUI() {
+    document.querySelectorAll("#type-toggle .type-btn").forEach(b =>
+      b.classList.toggle("active", b.dataset.type === state.typeFilter));
+    document.querySelectorAll("#filter-status-group .toggle-btn").forEach(b =>
+      b.classList.toggle("active", state.statusFilters.has(b.dataset.filter)));
+    const hasFilters = state.typeFilter !== "all" || state.statusFilters.size > 0;
+    filterBtn.classList.toggle("active", hasFilters);
   }
 
-  const EDIT_ICON = `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>`;
+  const EDIT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>`;
 
   function renderSections(entries) {
     const container = document.getElementById("sections");
@@ -999,7 +1029,7 @@
 
   function render() {
     const entries = filteredEntries();
-    renderStats(ALL_ENTRIES);
+    updateFilterUI();
     renderSections(entries);
     updateSubtitle(entries);
     updateAdminBar();
@@ -1017,6 +1047,10 @@
   const loginToggleBtn = document.getElementById("login-toggle-btn");
   const addBtn      = document.getElementById("add-btn");
   const syncBtn     = document.getElementById("sync-btn");
+  const syncBtnLabel = document.getElementById("sync-btn-label");
+  const filterBtn    = document.getElementById("filter-btn");
+  const filterPanel  = document.getElementById("filter-panel");
+  const filterClearBtn = document.getElementById("filter-clear-btn");
 
   const loginOverlay = document.getElementById("login-overlay");
   const loginForm     = document.getElementById("login-form");
@@ -1196,7 +1230,7 @@
     document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
       b.classList.toggle("active", b === btn));
   });
-  document.querySelectorAll("#status-group .form-status-icon[data-icon]").forEach(el => {
+  document.querySelectorAll(".form-status-icon[data-icon]").forEach(el => {
     el.innerHTML = STATUS_ICONS[el.dataset.icon];
   });
 
@@ -1374,12 +1408,33 @@
 
   // ── Event delegation (list controls) ─────────────────────────────────
   document.addEventListener("click", e => {
-    // Status filter pills
-    const pill = e.target.closest(".stat-pill");
-    if (pill) {
-      const filter = pill.dataset.filter;
-      if (filter === "all") state.statusFilters.clear();
-      else if (state.statusFilters.has(filter)) state.statusFilters.delete(filter);
+    // Filter popover toggle
+    if (e.target.closest("#filter-btn")) {
+      const willOpen = filterPanel.hidden;
+      filterPanel.hidden = !willOpen;
+      filterBtn.setAttribute("aria-expanded", String(willOpen));
+      return;
+    }
+
+    // Click away closes the filter popover
+    if (!filterPanel.hidden && !e.target.closest(".filter-wrap")) {
+      filterPanel.hidden = true;
+      filterBtn.setAttribute("aria-expanded", "false");
+    }
+
+    // Clear filters
+    if (e.target.closest("#filter-clear-btn")) {
+      state.statusFilters.clear();
+      state.typeFilter = "all";
+      render();
+      return;
+    }
+
+    // Status filter (multi-select)
+    const statusFilterBtn = e.target.closest("#filter-status-group .toggle-btn");
+    if (statusFilterBtn) {
+      const filter = statusFilterBtn.dataset.filter;
+      if (state.statusFilters.has(filter)) state.statusFilters.delete(filter);
       else state.statusFilters.add(filter);
       render();
       return;
@@ -1389,8 +1444,6 @@
     const typeBtn = e.target.closest("#type-toggle .type-btn");
     if (typeBtn) {
       state.typeFilter = typeBtn.dataset.type;
-      document.querySelectorAll("#type-toggle .type-btn").forEach(b =>
-        b.classList.toggle("active", b.dataset.type === state.typeFilter));
       render();
       return;
     }

@@ -230,7 +230,7 @@
     }
 
     /* ── Status icon ─────────────────────────────────────────────── */
-    .status-icon { display: inline-flex; cursor: default; }
+    .status-icon { display: inline-flex; vertical-align: middle; cursor: default; }
     .status-icon svg { width: 1.4rem; height: 1.4rem; }
     .pending-badge {
       font-size: .68rem; font-weight: 700; color: var(--color-accent);
@@ -929,6 +929,7 @@
   // ── Data ─────────────────────────────────────────────────────────────
   function entryMatchesStatusFilter(entry, filter) {
     if (filter === "flash") return entry.status === "send" && entry.flash;
+    if (filter === "send")  return entry.status === "send" && !entry.flash;
     return entry.status === filter;
   }
 

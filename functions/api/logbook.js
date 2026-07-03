@@ -1,24 +1,10 @@
 import { isAuthed } from "../_lib/auth.js";
+import { json } from "../_lib/json.js";
 
 const KV_KEY = "logbook:entries";
 
 const VALID_TYPES    = ["boulder", "lead"];
 const VALID_STATUSES = ["send", "project", "abandoned", "wishlist"];
-
-function slugify(str) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
-function generateId(place, name) {
-  return `${slugify(place)}-${slugify(name)}`;
-}
-
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 function validateFields(entry) {
   for (const field of ["place", "name", "grade", "type", "status"]) {
@@ -29,6 +15,15 @@ function validateFields(entry) {
   }
   if (!VALID_STATUSES.includes(entry.status)) {
     return `status must be one of: ${VALID_STATUSES.join(", ")}`;
+  }
+  if (entry.video) {
+    try {
+      if (!["http:", "https:"].includes(new URL(entry.video).protocol)) {
+        return "video must be an http(s) URL";
+      }
+    } catch {
+      return "video must be a valid URL";
+    }
   }
   return null;
 }
@@ -55,7 +50,7 @@ export async function onRequestGet({ env }) {
   return new Response(body, {
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=60",
+      "Cache-Control": "no-store",
     },
   });
 }
@@ -78,10 +73,18 @@ export async function onRequestPost({ request, env }) {
   const raw = await env.LOGBOOK_KV.get(KV_KEY);
   const { entries = [] } = raw ? JSON.parse(raw) : {};
 
-  let id = generateId(entry.place, entry.name);
-  // Avoid ID collision (same place+name entered twice)
+  // The client mints the ID (crypto.randomUUID()) so offline-queued writes
+  // keep a stable identity across the whole add/edit/sync lifecycle — the
+  // server never rewrites it, which would desync any already-queued edit.
+  const id = typeof entry.id === "string" && entry.id ? entry.id : crypto.randomUUID();
+
+  // With UUIDs, hitting an existing ID here is essentially always a retried
+  // sync of a write that already landed (e.g. the success response was lost
+  // to a flaky connection) rather than a genuine collision — treat it as an
+  // idempotent replay instead of erroring, so it doesn't get stuck in the
+  // offline queue forever.
   if (entries.some(e => e.id === id)) {
-    id = `${id}-${Date.now()}`;
+    return json({ entries }, 200);
   }
 
   entries.push(buildEntry(entry, id));
@@ -89,6 +92,7 @@ export async function onRequestPost({ request, env }) {
   await env.LOGBOOK_KV.put(KV_KEY, updated);
 
   return new Response(updated, {
+    status: 201,
     headers: { "Content-Type": "application/json" },
   });
 }

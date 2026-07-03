@@ -3,3 +3,4 @@
 node_modules/
 logbook/index.zip
 .wrangler/
+.claude/

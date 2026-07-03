@@ -16,6 +16,21 @@ async function hmac(key, message) {
   return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Constant-time string comparison. Hashes both sides to a fixed-length
+// digest first so neither length nor content is leaked via early exit.
+export async function timingSafeEqual(a, b) {
+  const enc = new TextEncoder();
+  const [aDigest, bDigest] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(a)),
+    crypto.subtle.digest("SHA-256", enc.encode(b)),
+  ]);
+  const aBytes = new Uint8Array(aDigest);
+  const bBytes = new Uint8Array(bDigest);
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ bBytes[i];
+  return diff === 0;
+}
+
 export async function createSessionCookie(adminKey) {
   const expiry = Date.now() + SESSION_TTL_SECONDS * 1000;
   const sig = await hmac(adminKey, String(expiry));
@@ -42,5 +57,5 @@ export async function isAuthed(request, env) {
   if (!expiry || Date.now() > expiry) return false;
 
   const expectedSig = await hmac(env.ADMIN_KEY, expiryStr);
-  return sig === expectedSig;
+  return timingSafeEqual(sig, expectedSig);
 }

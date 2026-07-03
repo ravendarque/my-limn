@@ -284,6 +284,12 @@
       border: 1px solid color-mix(in srgb, #f87171 40%, transparent);
       border-radius: var(--r); padding: 1rem 1.25rem; color: var(--color-text);
     }
+    .empty-box {
+      text-align: center; color: var(--color-text-muted);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--r); padding: 2rem; font-size: .9rem;
+    }
 
     /* ── Footer ──────────────────────────────────────────────────── */
     .footer { text-align: center; color: var(--color-text-muted); font-size: .78rem; margin-top: 2rem; }
@@ -563,25 +569,25 @@
         <div class="filter-panel" id="filter-panel" hidden>
           <div class="filter-section-label">Type</div>
           <div class="type-toggle" id="type-toggle">
-            <button class="type-btn active" data-type="all">All</button>
-            <button class="type-btn" data-type="boulder">Boulder</button>
-            <button class="type-btn" data-type="lead">Lead</button>
+            <button class="type-btn active" data-type="all" aria-pressed="true">All</button>
+            <button class="type-btn" data-type="boulder" aria-pressed="false">Boulder</button>
+            <button class="type-btn" data-type="lead" aria-pressed="false">Lead</button>
           </div>
           <div class="filter-section-label">Status</div>
           <div class="toggle-bar" id="filter-status-group">
-            <button type="button" class="toggle-btn" data-filter="flash">
+            <button type="button" class="toggle-btn" data-filter="flash" aria-pressed="false">
               <span class="form-status-icon" data-icon="flash"></span><span class="status-label">Flash</span>
             </button>
-            <button type="button" class="toggle-btn" data-filter="send">
+            <button type="button" class="toggle-btn" data-filter="send" aria-pressed="false">
               <span class="form-status-icon" data-icon="send"></span><span class="status-label">Send</span>
             </button>
-            <button type="button" class="toggle-btn" data-filter="project">
+            <button type="button" class="toggle-btn" data-filter="project" aria-pressed="false">
               <span class="form-status-icon" data-icon="project"></span><span class="status-label">Project</span>
             </button>
-            <button type="button" class="toggle-btn" data-filter="wishlist">
+            <button type="button" class="toggle-btn" data-filter="wishlist" aria-pressed="false">
               <span class="form-status-icon" data-icon="wishlist"></span><span class="status-label">Check out</span>
             </button>
-            <button type="button" class="toggle-btn" data-filter="abandoned">
+            <button type="button" class="toggle-btn" data-filter="abandoned" aria-pressed="false">
               <span class="form-status-icon" data-icon="abandoned"></span><span class="status-label">Abandoned</span>
             </button>
           </div>
@@ -602,9 +608,9 @@
 
 <!-- ══ Login modal ═══════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="login-overlay" hidden>
-  <div class="modal-panel modal-panel-sm">
+  <div class="modal-panel modal-panel-sm" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
     <div class="modal-header">
-      <h2>Log in</h2>
+      <h2 id="login-modal-title">Log in</h2>
       <button type="button" class="modal-close" id="login-close" aria-label="Close">✕</button>
     </div>
     <form id="login-form" autocomplete="off">
@@ -619,7 +625,7 @@
 
 <!-- ══ Add / edit entry modal ════════════════════════════════════════ -->
 <div class="modal-overlay" id="entry-overlay" hidden>
-  <div class="modal-panel">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title">
     <div class="modal-header">
       <h2 id="entry-modal-title">Add entry</h2>
       <button type="button" class="modal-close" id="entry-close" aria-label="Close">✕</button>
@@ -656,26 +662,26 @@
           </button>
         </div>
         <div class="toggle-bar" id="type-group">
-          <button type="button" class="toggle-btn active" data-value="boulder">Boulder</button>
-          <button type="button" class="toggle-btn" data-value="lead">Lead</button>
+          <button type="button" class="toggle-btn active" data-value="boulder" aria-pressed="true">Boulder</button>
+          <button type="button" class="toggle-btn" data-value="lead" aria-pressed="false">Lead</button>
         </div>
       </div>
 
       <div class="section-label">Status</div>
       <div class="toggle-bar" id="status-group">
-        <button type="button" class="toggle-btn" data-value="flash">
+        <button type="button" class="toggle-btn" data-value="flash" aria-pressed="false">
           <span class="form-status-icon" data-icon="flash"></span><span class="status-label">Flash</span>
         </button>
-        <button type="button" class="toggle-btn active" data-value="send">
+        <button type="button" class="toggle-btn active" data-value="send" aria-pressed="true">
           <span class="form-status-icon" data-icon="send"></span><span class="status-label">Send</span>
         </button>
-        <button type="button" class="toggle-btn" data-value="project">
+        <button type="button" class="toggle-btn" data-value="project" aria-pressed="false">
           <span class="form-status-icon" data-icon="project"></span><span class="status-label">Project</span>
         </button>
-        <button type="button" class="toggle-btn" data-value="wishlist">
+        <button type="button" class="toggle-btn" data-value="wishlist" aria-pressed="false">
           <span class="form-status-icon" data-icon="wishlist"></span><span class="status-label">Check out</span>
         </button>
-        <button type="button" class="toggle-btn" data-value="abandoned">
+        <button type="button" class="toggle-btn" data-value="abandoned" aria-pressed="false">
           <span class="form-status-icon" data-icon="abandoned"></span><span class="status-label">Abandoned</span>
         </button>
       </div>
@@ -716,7 +722,7 @@
 
 <script type="module">
   import { load } from "https://esm.sh/js-yaml@4";
-  import { applyTheme, loadTheme } from "../limn-engine.js";
+  import { applyTheme, loadTheme, escapeHtml } from "../limn-engine.js";
   import { STATUS_ICONS } from "./status-icons.js";
 
   // ── Config ───────────────────────────────────────────────────────────
@@ -808,10 +814,6 @@
     { g: "8a",  c: "var(--grade-8a)"   },
   ];
 
-  function slugify(str) {
-    return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  }
-
   // ── Date helpers ─────────────────────────────────────────────────────
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function formatDate(d) {
@@ -824,6 +826,12 @@
   function dateRank(d) {
     if (!d) return -1;
     return new Date(d).getTime();
+  }
+
+  function isSafeVideoUrl(url) {
+    if (!url) return false;
+    try { return ["http:", "https:"].includes(new URL(url).protocol); }
+    catch { return false; }
   }
 
   // ── Status ───────────────────────────────────────────────────────────
@@ -969,11 +977,16 @@
   }
 
   // ── Render ───────────────────────────────────────────────────────────
+  function setActive(el, active) {
+    el.classList.toggle("active", active);
+    el.setAttribute("aria-pressed", String(active));
+  }
+
   function updateFilterUI() {
     document.querySelectorAll("#type-toggle .type-btn").forEach(b =>
-      b.classList.toggle("active", b.dataset.type === state.typeFilter));
+      setActive(b, b.dataset.type === state.typeFilter));
     document.querySelectorAll("#filter-status-group .toggle-btn").forEach(b =>
-      b.classList.toggle("active", state.statusFilters.has(b.dataset.filter)));
+      setActive(b, state.statusFilters.has(b.dataset.filter)));
     const hasFilters = state.typeFilter !== "all" || state.statusFilters.size > 0;
     filterBtn.classList.toggle("active", hasFilters);
   }
@@ -985,7 +998,7 @@
     const groups = groupByPlace(entries);
 
     if (groups.length === 0) {
-      container.innerHTML = `<div class="error-box">No problems match your filters.</div>`;
+      container.innerHTML = `<div class="empty-box">No problems match your filters.</div>`;
       return;
     }
 
@@ -997,45 +1010,46 @@
       const isCollapsed = state.collapsed.has(place);
 
       const thClass = (c) => c !== col ? `sortable` : `sortable sort-${dir}`;
+      const thAriaSort = (c) => c !== col ? "none" : (dir === "asc" ? "ascending" : "descending");
 
       const rows = sorted.map(e => `
         <tr${e._pending ? ` class="pending-row"` : ""}>
           <td style="text-align:center;width:2rem">${statusBadge(e)}</td>
           <td><span class="grade-badge" style="color:${gradeColor(e.grade)}">${e.grade}</span></td>
           <td>
-            <span style="font-weight:500">${e.name}</span>
-            ${e.notes ? `<span class="notes-icon" title="${e.notes.replace(/"/g,'&quot;')}"> ℹ</span>` : ""}
+            <span style="font-weight:500">${escapeHtml(e.name)}</span>
+            ${e.notes ? `<span class="notes-icon" title="${escapeHtml(e.notes)}"> ℹ</span>` : ""}
             ${e._pending ? `<span class="pending-badge"> · pending sync</span>` : ""}
           </td>
-          <td class="area-tag">${e.area}</td>
-          <td class="type-text">${e.type}</td>
+          <td class="area-tag">${escapeHtml(e.area)}</td>
+          <td class="type-text">${escapeHtml(e.type)}</td>
           <td style="color:var(--color-text-muted);font-size:.82rem;white-space:nowrap">${formatDate(e.date)}</td>
-          <td style="text-align:center;width:2rem">${e.video ? `<a class="video-link" href="${e.video}" target="_blank" rel="noopener" title="Watch video">▶</a>` : ""}</td>
+          <td style="text-align:center;width:2rem">${isSafeVideoUrl(e.video) ? `<a class="video-link" href="${escapeHtml(e.video)}" target="_blank" rel="noopener" title="Watch video">▶</a>` : ""}</td>
           <td style="text-align:center;width:2rem">${isLoggedIn ? `<button type="button" class="edit-btn" data-edit-id="${e.id}" aria-label="Edit">${EDIT_ICON}</button>` : ""}</td>
         </tr>
       `).join("");
 
       return `
-        <div class="place-section${isCollapsed ? " collapsed" : ""}" data-place="${place}">
-          <div class="place-header" data-place="${place}">
-            <span class="place-name">${place}</span>
-            ${PLACE_COUNTRY[place] ? `<span style="color:var(--color-text-muted);font-size:.82rem">${PLACE_COUNTRY[place]}</span>` : ""}
+        <div class="place-section${isCollapsed ? " collapsed" : ""}" data-place="${escapeHtml(place)}">
+          <div class="place-header" data-place="${escapeHtml(place)}" role="button" tabindex="0" aria-expanded="${!isCollapsed}" aria-controls="place-body-${idx}">
+            <span class="place-name">${escapeHtml(place)}</span>
+            ${PLACE_COUNTRY[place] ? `<span style="color:var(--color-text-muted);font-size:.82rem">${escapeHtml(PLACE_COUNTRY[place])}</span>` : ""}
             <span class="place-chevron">▾</span>
           </div>
-          <div class="place-body">
+          <div class="place-body" id="place-body-${idx}">
             <table>
               <thead>
                 <tr>
                   <th style="width:2rem"></th>
-                  <th class="${thClass("grade")}" data-sort="grade" data-place="${place}">
+                  <th class="${thClass("grade")}" data-sort="grade" data-place="${escapeHtml(place)}" role="button" tabindex="0" aria-sort="${thAriaSort("grade")}">
                     Grade <i class="sort-icon"></i>
                   </th>
-                  <th class="${thClass("name")}" data-sort="name" data-place="${place}">
+                  <th class="${thClass("name")}" data-sort="name" data-place="${escapeHtml(place)}" role="button" tabindex="0" aria-sort="${thAriaSort("name")}">
                     Name <i class="sort-icon"></i>
                   </th>
                   <th>Area</th>
                   <th>Type</th>
-                  <th class="${thClass("date")}" data-sort="date" data-place="${place}">
+                  <th class="${thClass("date")}" data-sort="date" data-place="${escapeHtml(place)}" role="button" tabindex="0" aria-sort="${thAriaSort("date")}">
                     Date <i class="sort-icon"></i>
                   </th>
                   <th style="width:2rem"></th>
@@ -1108,6 +1122,42 @@
   const entryDeleteBtn = document.getElementById("entry-delete-btn");
   const entryMsg      = document.getElementById("entry-msg");
 
+  // ── Modal: focus management + trap ────────────────────────────────────
+  let lastFocusedEl = null;
+  function getFocusable(container) {
+    return [...container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter(el => el.offsetParent !== null);
+  }
+  function openModal(overlay, focusEl) {
+    lastFocusedEl = document.activeElement;
+    overlay.hidden = false;
+    (focusEl || getFocusable(overlay)[0])?.focus();
+  }
+  function closeModal(overlay) {
+    overlay.hidden = true;
+    lastFocusedEl?.focus();
+    lastFocusedEl = null;
+  }
+  document.addEventListener("keydown", e => {
+    const openOverlay = [loginOverlay, entryOverlay].find(o => !o.hidden);
+    if (!openOverlay) return;
+    if (e.key === "Escape") {
+      closeModal(openOverlay);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusables = getFocusable(openOverlay);
+      if (!focusables.length) return;
+      const first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    }
+  });
+
   // ── Admin bar ────────────────────────────────────────────────────────
   function updateAdminBar() {
     loginToggleBtn.textContent = isLoggedIn ? "Log out" : "Log in";
@@ -1139,11 +1189,10 @@
     }
     loginKeyInput.value = "";
     loginMsg.className = "msg";
-    loginOverlay.hidden = false;
-    loginKeyInput.focus();
+    openModal(loginOverlay, loginKeyInput);
   });
-  document.getElementById("login-close").addEventListener("click", () => loginOverlay.hidden = true);
-  loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) loginOverlay.hidden = true; });
+  document.getElementById("login-close").addEventListener("click", () => closeModal(loginOverlay));
+  loginOverlay.addEventListener("click", e => { if (e.target === loginOverlay) closeModal(loginOverlay); });
 
   loginForm.addEventListener("submit", async e => {
     e.preventDefault();
@@ -1162,8 +1211,9 @@
       } else {
         isLoggedIn = true;
         localStorage.setItem(LOGIN_HINT_KEY, "1");
-        loginOverlay.hidden = true;
+        closeModal(loginOverlay);
         render();
+        syncPending();
       }
     } catch (err) {
       loginMsg.textContent = `Network error: ${err.message}`;
@@ -1173,19 +1223,20 @@
   });
 
   syncBtn.addEventListener("click", syncPending);
+  window.addEventListener("online", syncPending);
 
   // ── Entry form: place/area lookup ───────────────────────────────────
   function populatePlaces() {
     const places = [...new Set(ALL_ENTRIES.map(e => e.place))].sort();
     document.getElementById("entry-places-list").innerHTML =
-      places.map(p => `<option value="${p}">`).join("");
+      places.map(p => `<option value="${escapeHtml(p)}">`).join("");
   }
   function populateAreas(place) {
     const areas = [...new Set(
       ALL_ENTRIES.filter(e => (!place || e.place === place) && e.area).map(e => e.area)
     )].sort();
     document.getElementById("entry-areas-list").innerHTML =
-      areas.map(a => `<option value="${a}">`).join("");
+      areas.map(a => `<option value="${escapeHtml(a)}">`).join("");
   }
   // A known area implies its place — auto-fill Location from Area when
   // it exactly matches an area we've already logged somewhere.
@@ -1211,7 +1262,7 @@
     if (!btn) return;
     selectedType = btn.dataset.value;
     document.querySelectorAll("#type-group .toggle-btn").forEach(b =>
-      b.classList.toggle("active", b === btn));
+      setActive(b, b === btn));
     renderGradeOptions();
     selectGradeByIndex(0);
   });
@@ -1260,7 +1311,7 @@
     selectedStatus = value === "flash" ? "send" : value;
     isFlash = value === "flash";
     document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
-      b.classList.toggle("active", b === btn));
+      setActive(b, b === btn));
   });
   document.querySelectorAll(".form-status-icon[data-icon]").forEach(el => {
     el.innerHTML = STATUS_ICONS[el.dataset.icon];
@@ -1269,14 +1320,14 @@
   function setStatusToggle(status, flash) {
     const value = flash ? "flash" : status;
     document.querySelectorAll("#status-group .toggle-btn").forEach(b =>
-      b.classList.toggle("active", b.dataset.value === value));
+      setActive(b, b.dataset.value === value));
     selectedStatus = status;
     isFlash = flash;
   }
   function setTypeToggle(type) {
     selectedType = type;
     document.querySelectorAll("#type-group .toggle-btn").forEach(b =>
-      b.classList.toggle("active", b.dataset.value === type));
+      setActive(b, b.dataset.value === type));
     renderGradeOptions();
   }
 
@@ -1318,12 +1369,12 @@
     populatePlaces();
     populateAreas(placeInput.value.trim());
 
-    entryOverlay.hidden = false;
+    openModal(entryOverlay, nameInput);
     entryOverlay.scrollTop = 0;
   }
   addBtn.addEventListener("click", () => openEntryModal(null));
-  document.getElementById("entry-close").addEventListener("click", () => entryOverlay.hidden = true);
-  entryOverlay.addEventListener("click", e => { if (e.target === entryOverlay) entryOverlay.hidden = true; });
+  document.getElementById("entry-close").addEventListener("click", () => closeModal(entryOverlay));
+  entryOverlay.addEventListener("click", e => { if (e.target === entryOverlay) closeModal(entryOverlay); });
 
   document.addEventListener("click", e => {
     const editBtn = e.target.closest(".edit-btn");
@@ -1341,7 +1392,7 @@
     const place = placeInput.value.trim();
     const name  = nameInput.value.trim();
     const entry = {
-      id:     editingId ?? `${slugify(place)}-${slugify(name)}`,
+      id:     editingId ?? crypto.randomUUID(),
       place,
       area:   areaInput.value.trim(),
       name,
@@ -1371,7 +1422,7 @@
       ALL_ENTRIES = data.entries;
       localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
       applyPendingToEntries();
-      entryOverlay.hidden = true;
+      closeModal(entryOverlay);
       render();
     } catch (err) {
       // Offline (or server unreachable) — queue for later sync, and
@@ -1382,7 +1433,7 @@
       else queue.push({ op, entry });
       setQueue(queue);
       applyPendingToEntries();
-      entryOverlay.hidden = true;
+      closeModal(entryOverlay);
       render();
     }
 
@@ -1404,7 +1455,7 @@
     if (queuedAdd) {
       setQueue(getQueue().filter(item => item.entry.id !== id));
       ALL_ENTRIES = ALL_ENTRIES.filter(e => e.id !== id);
-      entryOverlay.hidden = true;
+      closeModal(entryOverlay);
       entryDeleteBtn.disabled = false;
       render();
       return;
@@ -1422,7 +1473,7 @@
       ALL_ENTRIES = data.entries;
       localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(ALL_ENTRIES));
       applyPendingToEntries();
-      entryOverlay.hidden = true;
+      closeModal(entryOverlay);
       render();
     } catch (err) {
       // Offline (or server unreachable) — queue for later sync, and
@@ -1431,12 +1482,25 @@
       queue.push({ op: "delete", entry: { id } });
       setQueue(queue);
       ALL_ENTRIES = ALL_ENTRIES.filter(e => e.id !== id);
-      entryOverlay.hidden = true;
+      closeModal(entryOverlay);
       render();
     }
 
     entryDeleteBtn.disabled = false;
   });
+
+  // ── Shared list-control actions (click + keyboard) ────────────────────
+  function toggleSort(place, col) {
+    const cur = getSort(place);
+    const dir = cur.col === col && cur.dir === "asc" ? "desc" : "asc";
+    state.sortByPlace[place] = { col, dir };
+    render();
+  }
+  function toggleCollapse(place) {
+    if (state.collapsed.has(place)) state.collapsed.delete(place);
+    else state.collapsed.add(place);
+    render();
+  }
 
   // ── Event delegation (list controls) ─────────────────────────────────
   document.addEventListener("click", e => {
@@ -1493,22 +1557,34 @@
     // Sort header
     const sortTh = e.target.closest("th[data-sort]");
     if (sortTh) {
-      const place = sortTh.dataset.place;
-      const col   = sortTh.dataset.sort;
-      const cur   = getSort(place);
-      const dir   = cur.col === col && cur.dir === "asc" ? "desc" : "asc";
-      state.sortByPlace[place] = { col, dir };
-      render();
+      toggleSort(sortTh.dataset.place, sortTh.dataset.sort);
       return;
     }
 
     // Collapse toggle
     const header = e.target.closest(".place-header");
     if (header) {
-      const place = header.dataset.place;
-      if (state.collapsed.has(place)) state.collapsed.delete(place);
-      else state.collapsed.add(place);
-      render();
+      toggleCollapse(header.dataset.place);
+      return;
+    }
+  });
+
+  // Keyboard activation (Enter/Space) for the same controls, since they're
+  // <div>/<th> elements with role="button" rather than real <button>s.
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+
+    const sortTh = e.target.closest("th[data-sort]");
+    if (sortTh) {
+      e.preventDefault();
+      toggleSort(sortTh.dataset.place, sortTh.dataset.sort);
+      return;
+    }
+
+    const header = e.target.closest(".place-header");
+    if (header) {
+      e.preventDefault();
+      toggleCollapse(header.dataset.place);
       return;
     }
   });

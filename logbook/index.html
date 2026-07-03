@@ -67,23 +67,24 @@
       margin-bottom: 1.5rem;
     }
     .type-toggle {
-      display: grid; grid-template-columns: repeat(3, 1fr);
+      display: flex; flex-direction: column;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--r);
       overflow: hidden;
     }
     .type-btn {
-      padding: .5rem .5rem;
+      width: 100%;
+      padding: .55rem .7rem;
       font-size: .82rem;
-      border: none; border-right: 1px solid var(--color-border);
+      border: none; border-bottom: 1px solid var(--color-border);
       background: none;
       color: var(--color-text-muted);
       cursor: pointer;
-      text-align: center;
+      text-align: left;
       transition: background .15s, color .15s;
     }
-    .type-btn:last-child { border-right: none; }
+    .type-btn:last-child { border-bottom: none; }
     .type-btn.active { background: var(--color-accent); color: var(--color-accent-text); }
 
     .search-box {
@@ -131,16 +132,19 @@
     }
     .filter-section-label:not(:first-child) { margin-top: .9rem; }
     #filter-status-group {
-      display: grid; grid-template-columns: repeat(5, 1fr);
+      display: flex; flex-direction: column;
       width: 100%; margin-bottom: 0;
     }
     #filter-status-group .toggle-btn {
-      min-width: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: .2rem;
-      padding: .55rem .2rem;
+      width: 100%;
+      display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
+      gap: .6rem;
+      padding: .55rem .7rem;
+      border-right: none; border-bottom: 1px solid var(--color-border);
+      text-align: left;
     }
-    #filter-status-group .status-label { white-space: normal; line-height: 1.15; }
+    #filter-status-group .toggle-btn:last-child { border-bottom: none; }
+    #filter-status-group .status-label { white-space: nowrap; }
     .filter-clear-btn {
       display: block; width: 100%; margin-top: .9rem;
       background: none; border: none;
